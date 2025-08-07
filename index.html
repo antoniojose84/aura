@@ -116,7 +116,7 @@
         </div>
 
         <!-- Pantalla de inicio de sesión -->
-        <div id="login-screen" class="screen neumorphism-card p-8 rounded-2xl w-full text-center">
+        <div id="login-screen" class="screen neumorphism-card p-8 rounded-2xl w-full text-center hidden">
             <div class="mt-8 mb-8">
                  <!-- Círculo morado brillante sin fondo -->
                 <svg width="64" height="64" viewBox="0 0 100 100" class="block mx-auto">
@@ -135,7 +135,7 @@
             </h1>
 
             <div class="flex flex-col space-y-4 mb-6">
-                <input type="text" id="login-username" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Usuario">
+                <input type="email" id="login-email" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Correo electrónico">
                 <input type="password" id="login-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Contraseña">
             </div>
             
@@ -185,8 +185,8 @@
             <!-- Header de la pantalla principal con botones de navegación (con efecto de vidrio) -->
             <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-pill z-50 rounded-b-3xl">
                 <!-- Botón de menú/opciones -->
-                <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-bars"></i>
+                <button id="logout-button" class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
+                    <i class="fas fa-sign-out-alt"></i>
                 </button>
                 <div class="flex-grow text-center">
                     <svg width="40" height="40" viewBox="0 0 100 100" class="inline-block">
@@ -207,7 +207,7 @@
             <div class="pt-20"> <!-- Espacio para el header fijo -->
                 <!-- Sección para la publicación conversacional -->
                 <div class="neumorphism-card p-4 rounded-xl flex items-center mb-6">
-                    <img src="https://placehold.co/40x40/FF5733/ffffff?text=U" alt="Avatar de usuario" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
+                    <img id="user-avatar-main" src="https://placehold.co/40x40/FF5733/ffffff?text=U" alt="Avatar de usuario" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
                     <div id="new-post-trigger" class="flex-grow p-2 rounded-xl neumorphism-input text-gray-500 dark:text-gray-400 text-sm cursor-pointer">
                         <span data-lang-key="newPostPlaceholder">¿Qué estás pensando ahora?</span>
                     </div>
@@ -215,22 +215,8 @@
 
                 <!-- Los posts se cargarán aquí -->
                 <div id="posts-container">
-                    <!-- Tarjeta de post 1 -->
-                    <div class="neumorphism-card p-4 rounded-xl overflow-hidden mb-6">
-                        <div class="flex items-center p-2">
-                            <img src="https://placehold.co/40x40/FF5733/ffffff?text=J" alt="Avatar de Juan" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
-                            <div>
-                                <p class="font-semibold text-gray-900 dark:text-white">Juan</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Hace 1 hora</p>
-                            </div>
-                        </div>
-                        <p class="px-2 text-gray-700 dark:text-gray-300 mb-4">¡Hola a todos! Este es un post de prueba para la actualización.</p>
-                        <img src="https://placehold.co/600x400/5833FF/ffffff?text=Paisaje" alt="Post de Juan" class="w-full h-auto rounded-lg mb-2">
-                        <div class="flex items-center p-2 border-t border-gray-200 dark:border-gray-700">
-                            <span class="text-gray-600 dark:text-gray-400 mr-4">15 Me gusta</span>
-                            <span class="text-gray-600 dark:text-gray-400">3 comentarios</span>
-                        </div>
-                    </div>
+                    <!-- Mensaje de carga inicial -->
+                    <p id="loading-message" class="text-center text-gray-500 dark:text-gray-400">Cargando publicaciones...</p>
                 </div>
             </div>
         </div>
@@ -264,13 +250,12 @@
             <div class="neumorphism-card p-4 rounded-xl flex flex-col items-start mt-8">
                 <div class="flex justify-between items-start w-full mb-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">José Antonio</h2>
-                        <p class="text-gray-500 dark:text-gray-400">joseantoniooo_1</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">0 seguidores</p>
+                        <h2 id="profile-username" class="text-2xl font-bold text-gray-900 dark:text-white">Cargando...</h2>
+                        <p id="profile-userId" class="text-sm text-gray-500 dark:text-gray-400 mt-1 break-all"></p>
                     </div>
                     <!-- Imagen de perfil grande y botón de agregar -->
                     <div class="relative w-20 h-20 rounded-full neumorphism-button overflow-hidden">
-                        <img src="https://placehold.co/80x80/5e43f3/ffffff?text=JA" alt="Perfil del usuario" class="w-full h-full object-cover">
+                        <img id="user-avatar-profile" src="https://placehold.co/80x80/5e43f3/ffffff?text=JA" alt="Perfil del usuario" class="w-full h-full object-cover">
                         <div class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-social-purple flex items-center justify-center text-white text-xs neumorphism-button p-1">
                              <i class="fas fa-plus"></i>
                         </div>
@@ -336,14 +321,14 @@
     </div>
     
     <!-- Barra de navegación inferior flotante (en forma de píldora) -->
-    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex justify-around p-2 glass-pill rounded-full shadow-lg z-50 w-full max-w-xs">
-        <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple focus:outline-none">
+    <div id="bottom-navbar" class="fixed bottom-4 left-1/2 -translate-x-1/2 flex justify-around p-2 glass-pill rounded-full shadow-lg z-50 w-full max-w-xs hidden">
+        <button id="home-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple focus:outline-none">
             <i class="fas fa-home"></i>
         </button>
         <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
             <i class="fas fa-envelope"></i>
         </button>
-        <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
+        <button id="create-post-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
             <i class="fas fa-plus"></i>
         </button>
         <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
@@ -358,15 +343,10 @@
     <div id="new-post-modal" class="modal">
         <div class="modal-content neumorphism-card p-6 rounded-2xl w-11/12 max-w-xs text-center">
             <h3 class="text-xl font-bold mb-4" data-lang-key="newPostModalTitle">Crear nueva publicación</h3>
+            <textarea id="post-text" class="neumorphism-input p-4 rounded-xl w-full h-32 focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent mb-4" placeholder="Escribe tu publicación aquí..."></textarea>
             <div class="flex flex-col space-y-4">
-                <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
-                    <i class="fas fa-camera mr-2"></i> <span data-lang-key="photoButton">Subir Foto</span>
-                </button>
-                <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
-                    <i class="fas fa-video mr-2"></i> <span data-lang-key="videoButton">Subir Video</span>
-                </button>
-                <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
-                    <i class="fas fa-pen mr-2"></i> <span data-lang-key="textButton">Escribir Texto</span>
+                <button id="publish-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                    <span data-lang-key="publishButton">Publicar</span>
                 </button>
                 <button id="close-modal-button" class="mt-4 text-blue-500 hover:underline">
                     <span data-lang-key="closeButton">Cancelar</span>
@@ -375,42 +355,76 @@
         </div>
     </div>
     
-    <!-- Modal de notificación de actualización -->
-    <div id="update-modal" class="modal">
+    <!-- Modal de error genérico -->
+    <div id="error-modal" class="modal">
         <div class="modal-content neumorphism-card p-6 rounded-2xl w-11/12 max-w-xs text-center">
-            <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">¡Actualizamos!</h3>
-            <p class="mb-6 text-gray-700 dark:text-gray-300">Hemos hecho algunas mejoras y correcciones.</p>
-            <button id="close-update-modal" class="neumorphism-button font-semibold p-3 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+            <h3 class="text-xl font-bold mb-4 text-red-500">¡Error!</h3>
+            <p id="error-message" class="mb-6 text-gray-700 dark:text-gray-300"></p>
+            <button id="close-error-modal" class="neumorphism-button font-semibold p-3 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
                 Aceptar
             </button>
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCustomToken, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <script>
+        // Variables globales proporcionadas por el entorno de Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Variables del estado de la aplicación
+        let currentUser = null;
+        let username = 'Usuario'; // Nombre de usuario predeterminado
+        let userId = null;
+
+        // Elementos del DOM
         const body = document.body;
         const themeToggle = document.getElementById('theme-toggle');
         const languageToggle = document.getElementById('language-toggle');
-        
-        // Screens
         const loginScreen = document.getElementById('login-screen');
         const signupScreen = document.getElementById('signup-screen');
         const mainScreen = document.getElementById('main-screen');
         const profileScreen = document.getElementById('profile-screen');
-
-        // Links and Buttons
+        const bottomNavbar = document.getElementById('bottom-navbar');
         const showSignupLink = document.getElementById('show-signup-link');
         const showLoginLink = document.getElementById('show-login-link');
+        const loginEmailInput = document.getElementById('login-email');
+        const loginPasswordInput = document.getElementById('login-password');
         const loginButton = document.getElementById('login-button');
+        const signupEmailInput = document.getElementById('signup-email');
+        const signupUsernameInput = document.getElementById('signup-username');
+        const signupPasswordInput = document.getElementById('signup-password');
         const signupButton = document.getElementById('signup-button');
+        const logoutButton = document.getElementById('logout-button');
         const newPostTrigger = document.getElementById('new-post-trigger');
         const newPostModal = document.getElementById('new-post-modal');
+        const postTextarea = document.getElementById('post-text');
+        const publishButton = document.getElementById('publish-button');
         const closeModalButton = document.getElementById('close-modal-button');
-        const updateModal = document.getElementById('update-modal');
-        const closeUpdateModalButton = document.getElementById('close-update-modal');
+        const errorModal = document.getElementById('error-modal');
+        const errorMessage = document.getElementById('error-message');
+        const closeErrorModalButton = document.getElementById('close-error-modal');
         const profileButton = document.getElementById('profile-button'); 
-        const backButton = document.getElementById('back-button'); // Botón de retroceso en la pantalla de perfil
-        const searchButton = document.getElementById('search-button');
+        const backButton = document.getElementById('back-button');
+        const homeButton = document.getElementById('home-button');
+        const postsContainer = document.getElementById('posts-container');
+        const profileUsername = document.getElementById('profile-username');
+        const profileUserId = document.getElementById('profile-userId');
+        const userAvatarMain = document.getElementById('user-avatar-main');
+        const userAvatarProfile = document.getElementById('user-avatar-profile');
+        const createPostButton = document.getElementById('create-post-button');
+        const loadingMessage = document.getElementById('loading-message');
+
 
         // Textos para diferentes idiomas
         const translations = {
@@ -424,12 +438,11 @@
                 'mainTitle': 'Inicio',
                 'newPostPlaceholder': '¿Qué estás pensando ahora?',
                 'newPostModalTitle': 'Crear nueva publicación',
-                'photoButton': 'Subir Foto',
-                'videoButton': 'Subir Video',
-                'textButton': 'Escribir Texto',
+                'publishButton': 'Publicar',
                 'closeButton': 'Cancelar',
                 'usernamePlaceholder': 'Usuario',
                 'passwordPlaceholder': 'Contraseña',
+                'emailPlaceholder': 'Correo electrónico',
                 'signupEmailPlaceholder': 'Correo electrónico',
                 'signupUsernamePlaceholder': 'Nombre de usuario',
                 'signupPasswordPlaceholder': 'Contraseña',
@@ -447,6 +460,10 @@
                 'followProfilesTitle': 'Seguir 10 perfiles',
                 'followProfilesDescription': 'Llena tu feed de hilos que te interesen.',
                 'viewProfilesButton': 'Ver perfiles',
+                'logoutButton': 'Cerrar sesión',
+                'loadingPosts': 'Cargando publicaciones...',
+                'noPosts': 'Aún no hay publicaciones. ¡Sé el primero en publicar!',
+                'postPublished': '¡Publicación enviada!',
             },
             'en': {
                 'loginTitle': 'Sign in',
@@ -458,12 +475,11 @@
                 'mainTitle': 'Home',
                 'newPostPlaceholder': 'What are you thinking about now?',
                 'newPostModalTitle': 'Create new post',
-                'photoButton': 'Upload Photo',
-                'videoButton': 'Upload Video',
-                'textButton': 'Write Text',
+                'publishButton': 'Publish',
                 'closeButton': 'Cancel',
                 'usernamePlaceholder': 'Username',
                 'passwordPlaceholder': 'Password',
+                'emailPlaceholder': 'Email',
                 'signupEmailPlaceholder': 'Email',
                 'signupUsernamePlaceholder': 'Username',
                 'signupPasswordPlaceholder': 'Password',
@@ -481,6 +497,10 @@
                 'followProfilesTitle': 'Follow 10 profiles',
                 'followProfilesDescription': 'Fill your feed with threads you care about.',
                 'viewProfilesButton': 'View profiles',
+                'logoutButton': 'Sign Out',
+                'loadingPosts': 'Loading posts...',
+                'noPosts': 'No posts yet. Be the first to post!',
+                'postPublished': 'Post sent!',
             },
             'fr': {
                 'loginTitle': 'Se connecter',
@@ -492,12 +512,11 @@
                 'mainTitle': 'Accueil',
                 'newPostPlaceholder': 'À quoi pensez-vous ?',
                 'newPostModalTitle': 'Créer une nouvelle publication',
-                'photoButton': 'Ajouter une photo',
-                'videoButton': 'Ajouter une vidéo',
-                'textButton': 'Écrire un texte',
+                'publishButton': 'Publier',
                 'closeButton': 'Annuler',
                 'usernamePlaceholder': 'Nom d\'utilisateur',
                 'passwordPlaceholder': 'Mot de passe',
+                'emailPlaceholder': 'E-mail',
                 'signupEmailPlaceholder': 'E-mail',
                 'signupUsernamePlaceholder': 'Nom d\'utilisateur',
                 'signupPasswordPlaceholder': 'Mot de passe',
@@ -515,6 +534,10 @@
                 'followProfilesTitle': 'Suivre 10 profils',
                 'followProfilesDescription': 'Remplissez votre fil avec des fils qui vous intéressent.',
                 'viewProfilesButton': 'Voir les profils',
+                'logoutButton': 'Se déconnecter',
+                'loadingPosts': 'Chargement des publications...',
+                'noPosts': 'Aucune publication pour le moment. Soyez le premier à publier !',
+                'postPublished': 'Publication envoyée !',
             }
         };
 
@@ -525,6 +548,12 @@
             const allScreens = document.querySelectorAll('.screen');
             allScreens.forEach(s => s.classList.add('hidden'));
             screen.classList.remove('hidden');
+            
+            if (screen.id === 'main-screen' || screen.id === 'profile-screen') {
+                bottomNavbar.classList.remove('hidden');
+            } else {
+                bottomNavbar.classList.add('hidden');
+            }
         }
 
         // Función para cambiar el idioma
@@ -537,11 +566,17 @@
                 }
             });
             // Actualiza los placeholders
-            document.getElementById('login-username').placeholder = translations[lang].usernamePlaceholder;
+            document.getElementById('login-email').placeholder = translations[lang].emailPlaceholder;
             document.getElementById('login-password').placeholder = translations[lang].passwordPlaceholder;
             document.getElementById('signup-email').placeholder = translations[lang].signupEmailPlaceholder;
             document.getElementById('signup-username').placeholder = translations[lang].signupUsernamePlaceholder;
             document.getElementById('signup-password').placeholder = translations[lang].signupPasswordPlaceholder;
+        }
+
+        // Función para mostrar modal de error
+        function showErrorMessage(message) {
+            errorMessage.textContent = message;
+            errorModal.style.display = 'flex';
         }
 
         // Cargar el tema guardado en el almacenamiento local o usar la preferencia del sistema
@@ -587,31 +622,64 @@
             showScreen(loginScreen);
         });
 
-        // Lógica de inicio de sesión
-        loginButton.addEventListener('click', () => {
-            // En una aplicación real, aquí validarías las credenciales
-            // y, si son correctas, guardarías el estado.
-            console.log("Lógica de inicio de sesión no implementada. Simulando inicio de sesión exitoso.");
-            localStorage.setItem('isLoggedIn', 'true');
-            showScreen(mainScreen);
+        // Lógica de inicio de sesión con Firebase
+        loginButton.addEventListener('click', async () => {
+            const email = loginEmailInput.value;
+            const password = loginPasswordInput.value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // El onAuthStateChanged se encargará de la navegación
+            } catch (error) {
+                showErrorMessage(error.message);
+            }
         });
         
-        // Lógica de registro
-        signupButton.addEventListener('click', () => {
-            // En una aplicación real, aquí crearías un nuevo usuario.
-            console.log("Lógica de registro no implementada. Simulando registro exitoso.");
-            localStorage.setItem('isLoggedIn', 'true');
-            showScreen(mainScreen);
+        // Lógica de registro con Firebase
+        signupButton.addEventListener('click', async () => {
+            const email = signupEmailInput.value;
+            const password = signupPasswordInput.value;
+            const newUsername = signupUsernameInput.value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                const userDocRef = doc(db, `artifacts/${appId}/users/${user.uid}/profiles`, user.uid);
+                await setDoc(userDocRef, {
+                    username: newUsername,
+                    createdAt: serverTimestamp()
+                });
+                // El onAuthStateChanged se encargará de la navegación
+            } catch (error) {
+                showErrorMessage(error.message);
+            }
+        });
+
+        // Lógica para cerrar sesión
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                // El onAuthStateChanged se encargará de la navegación
+            } catch (error) {
+                showErrorMessage(error.message);
+            }
         });
         
         // Manejadores para el modal de publicación
         newPostTrigger.addEventListener('click', () => {
-            newPostModal.style.display = 'flex';
+            if (currentUser) {
+                newPostModal.style.display = 'flex';
+            } else {
+                showErrorMessage('Debes iniciar sesión para publicar.');
+            }
         });
         
-        // El botón de + también abre el modal de publicación
-        document.querySelector('.fa-plus').closest('button').addEventListener('click', () => {
-            newPostModal.style.display = 'flex';
+        createPostButton.addEventListener('click', () => {
+            if (currentUser) {
+                newPostModal.style.display = 'flex';
+            } else {
+                showErrorMessage('Debes iniciar sesión para publicar.');
+            }
         });
 
         closeModalButton.addEventListener('click', () => {
@@ -624,46 +692,157 @@
                 newPostModal.style.display = 'none';
             }
         });
-        
-        // Lógica para el modal de actualización
-        closeUpdateModalButton.addEventListener('click', () => {
-            updateModal.style.display = 'none';
+
+        // Cierra el modal de error
+        closeErrorModalButton.addEventListener('click', () => {
+            errorModal.style.display = 'none';
+        });
+
+        // Lógica para publicar un nuevo post
+        publishButton.addEventListener('click', async () => {
+            const postContent = postTextarea.value.trim();
+            if (postContent === '') {
+                showErrorMessage('El contenido del post no puede estar vacío.');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/public/data/posts`), {
+                    content: postContent,
+                    authorId: userId,
+                    authorUsername: username,
+                    timestamp: serverTimestamp(),
+                    likes: 0
+                });
+                postTextarea.value = '';
+                newPostModal.style.display = 'none';
+            } catch (error) {
+                showErrorMessage('Error al publicar el post: ' + error.message);
+            }
         });
 
         // Lógica para el botón de perfil: Muestra la pantalla de perfil
         profileButton.addEventListener('click', () => {
-            // Mensaje de depuración para confirmar que el botón es presionado
-            console.log("Botón de perfil presionado. Cambiando a la pantalla de perfil.");
             showScreen(profileScreen);
         });
 
         // Lógica para el botón de retroceso en la pantalla de perfil
         backButton.addEventListener('click', () => {
-            console.log("Botón de retroceso presionado. Volviendo a la pantalla principal.");
+            showScreen(mainScreen);
+        });
+
+        // Lógica para el botón de inicio en la barra de navegación
+        homeButton.addEventListener('click', () => {
             showScreen(mainScreen);
         });
         
-        // Lógica para el botón de búsqueda
-        searchButton.addEventListener('click', () => {
-            console.log("Botón de búsqueda clicado. Aquí iría la lógica de búsqueda.");
-            // Aquí se podría implementar la lógica para la búsqueda
-        });
+        // Función para renderizar un post
+        function renderPost(post) {
+            const postElement = document.createElement('div');
+            postElement.className = 'neumorphism-card p-4 rounded-xl overflow-hidden mb-6';
+            const timestamp = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleString() : 'Justo ahora';
+            
+            postElement.innerHTML = `
+                <div class="flex items-center p-2">
+                    <img src="https://placehold.co/40x40/FF5733/ffffff?text=${post.authorUsername[0]}" alt="Avatar de ${post.authorUsername}" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-white">${post.authorUsername}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${timestamp}</p>
+                    </div>
+                </div>
+                <p class="px-2 text-gray-700 dark:text-gray-300 mb-4">${post.content}</p>
+                <div class="flex items-center p-2 border-t border-gray-200 dark:border-gray-700">
+                    <span class="text-gray-600 dark:text-gray-400 mr-4">${post.likes} Me gusta</span>
+                </div>
+            `;
+            return postElement;
+        }
 
+        // Listener en tiempo real para las publicaciones de Firestore
+        function setupPostsListener() {
+            const postsCollectionRef = collection(db, `artifacts/${appId}/public/data/posts`);
+            onSnapshot(postsCollectionRef, (snapshot) => {
+                postsContainer.innerHTML = '';
+                if (snapshot.empty) {
+                    postsContainer.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400">${translations[currentLang].noPosts}</p>`;
+                } else {
+                    const sortedPosts = [];
+                    snapshot.forEach(doc => {
+                        sortedPosts.push(doc.data());
+                    });
+                    
+                    // Ordenar posts por timestamp de forma descendente
+                    sortedPosts.sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    sortedPosts.forEach(post => {
+                        postsContainer.appendChild(renderPost(post));
+                    });
+                }
+            }, (error) => {
+                showErrorMessage('Error al cargar publicaciones: ' + error.message);
+            });
+        }
+        
+        // Función para obtener el nombre de usuario
+        async function fetchUsername(uid) {
+            try {
+                const profilesCollectionRef = collection(db, `artifacts/${appId}/users/${uid}/profiles`);
+                const profileSnapshot = await getDocs(profilesCollectionRef);
+                if (!profileSnapshot.empty) {
+                    const profileDoc = profileSnapshot.docs[0];
+                    return profileDoc.data().username;
+                }
+            } catch (error) {
+                console.error("Error fetching username:", error);
+                return 'Usuario';
+            }
+            return 'Usuario';
+        }
 
-        // Función para manejar la persistencia de la sesión al cargar la página
-        function checkSession() {
-            if (localStorage.getItem('isLoggedIn') === 'true') {
+        // Listener de autenticación para manejar los cambios de estado del usuario
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                userId = user.uid;
+                username = await fetchUsername(userId);
+
+                // Actualizar la interfaz de usuario con la información del usuario
+                profileUsername.textContent = username;
+                profileUserId.textContent = userId;
+                userAvatarMain.src = `https://placehold.co/40x40/5e43f3/ffffff?text=${username[0]}`;
+                userAvatarProfile.src = `https://placehold.co/80x80/5e43f3/ffffff?text=${username[0]}`;
+
                 showScreen(mainScreen);
+                setupPostsListener();
             } else {
+                currentUser = null;
+                userId = null;
+                username = 'Usuario';
+                showScreen(loginScreen);
+            }
+        });
+        
+        // Función para autenticar con el token inicial si existe
+        async function authenticateWithToken() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    // Si no hay token inicial, usa el inicio de sesión anónimo como fallback
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Error during initial authentication:", error);
+                showErrorMessage("Error durante la autenticación inicial. Intente recargar la página.");
                 showScreen(loginScreen);
             }
         }
-        
-        // Cargar el tema, mostrar el mensaje de actualización y revisar la sesión al iniciar la aplicación
+
+        // Cargar el tema y autenticar al iniciar la aplicación
         window.onload = function() {
             loadTheme();
-            checkSession();
-            updateModal.style.display = 'flex'; // Mostrar el modal de actualización
+            setLanguage('es');
+            authenticateWithToken();
         }
     </script>
 </body>
