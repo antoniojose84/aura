@@ -401,6 +401,7 @@
         let currentUser = null;
         let username = 'Usuario'; // Nombre de usuario predeterminado
         let userId = null;
+        let isAuthReady = false;
 
         // Elementos del DOM
         const body = document.body;
@@ -790,6 +791,8 @@
 
         // Listener en tiempo real para las publicaciones de Firestore
         function setupPostsListener() {
+            if (!isAuthReady) return;
+
             const postsCollectionRef = collection(db, `artifacts/${appId}/public/data/posts`);
             onSnapshot(postsCollectionRef, (snapshot) => {
                 postsContainer.innerHTML = '';
@@ -831,6 +834,7 @@
 
         // Listener de autenticación para manejar los cambios de estado del usuario
         onAuthStateChanged(auth, async (user) => {
+            isAuthReady = true;
             if (user) {
                 currentUser = user;
                 userId = user.uid;
@@ -857,12 +861,11 @@
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
-                    // Si no hay token inicial, usa el inicio de sesión anónimo como fallback
                     await signInAnonymously(auth);
                 }
             } catch (error) {
                 console.error("Error during initial authentication:", error);
-                showErrorMessage("Error durante la autenticación inicial. Intente recargar la página.");
+                // Si la autenticación falla, mostramos directamente la pantalla de login
                 showScreen(loginScreen);
             }
         }
