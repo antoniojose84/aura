@@ -3,18 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Red Social Dinámica</title>
-    <!-- Usamos Tailwind CSS para un estilo moderno y rápido -->
+    <title>Mi Red Social</title>
+    <!-- Tailwind CSS para un estilo moderno y responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class', // Habilitar el modo oscuro basado en una clase 'dark' en el HTML
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        'social-purple': '#5e43f3', // Color personalizado basado en tu imagen
+                        'liquid-bg-light': '#e0e5ec',
+                        'liquid-bg-dark': '#1e2023',
+                        'liquid-surface-light': '#e0e5ec',
+                        'liquid-surface-dark': '#292c30',
+                        'liquid-border-light': 'rgba(255, 255, 255, 0.5)',
+                        'liquid-border-dark': 'rgba(0, 0, 0, 0.5)',
                     }
                 },
             },
@@ -24,86 +30,165 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
         body {
-            background-color: #f3f4f6;
+            background-color: #e0e5ec;
             color: #1f2937;
+            transition: background-color 0.5s, color 0.5s;
         }
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #111827;
-                color: #f9fafb;
-            }
+        body.dark {
+            background-color: #1e2023;
+            color: #f9fafb;
+        }
+
+        /* Estilo para el efecto Liquid Glass / Neumorphism */
+        .neumorphism-card {
+            box-shadow: 6px 6px 12px #b8b8b8, -6px -6px 12px #ffffff;
+        }
+        .dark .neumorphism-card {
+            box-shadow: 6px 6px 12px #17181a, -6px -6px 12px #262a2d;
+        }
+
+        .neumorphism-input {
+            box-shadow: inset 6px 6px 12px #b8b8b8, inset -6px -6px 12px #ffffff;
+        }
+        .dark .neumorphism-input {
+            box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262a2d;
+        }
+
+        .neumorphism-button {
+            box-shadow: 6px 6px 12px #b8b8b8, -6px -6px 12px #ffffff;
+        }
+        .dark .neumorphism-button {
+            box-shadow: 6px 6px 12px #17181a, -6px -6px 12px #262d31;
+        }
+
+        .neumorphism-button:active {
+            box-shadow: inset 6px 6px 12px #b8b8b8, inset -6px -6px 12px #ffffff;
+        }
+        .dark .neumorphism-button:active {
+            box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262a2d;
         }
     </style>
 </head>
 <body class="font-sans antialiased">
 
     <!-- Contenedor principal de la aplicación -->
-    <div id="app-container" class="container mx-auto p-4 md:p-8 max-w-xl">
-        <h1 class="text-3xl font-bold text-center mb-8 text-blue-600 dark:text-blue-400">
-            Mi Red Social
-        </h1>
+    <div id="app-container" class="container mx-auto p-4 md:p-8 max-w-sm flex flex-col min-h-screen justify-center">
 
-        <!-- Sección de login (funcionalidad de login por ahora no esta disponible) -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 text-center">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Inicia sesión</h2>
-            <div class="flex justify-center space-x-4">
-                <!-- Botón de Google -->
-                <button class="bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
-                    <i class="fab fa-google text-2xl text-red-500"></i>
-                </button>
-                <!-- Botón de Twitter -->
-                <button class="bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
-                    <i class="fab fa-twitter text-2xl text-blue-400"></i>
-                </button>
-                <!-- Botón genérico de red social con ícono personalizado y color púrpura -->
-                <button class="bg-social-purple text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
-                    <!-- Usamos un SVG como icono para que coincida con el estilo que buscabas -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                        <circle cx="12" cy="12" r="10" />
-                    </svg>
-                </button>
-            </div>
-            <a href="#" class="text-blue-500 hover:underline mt-4 inline-block">Crear nueva cuenta</a>
+        <!-- Contenedor para los controles de idioma y modo oscuro -->
+        <div class="fixed top-4 right-4 flex space-x-2">
+            <!-- Botón para cambiar el idioma -->
+            <button id="language-toggle" class="neumorphism-button w-12 h-12 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 focus:outline-none">
+                <i class="fas fa-globe"></i>
+            </button>
+            <!-- Botón para cambiar el modo claro/oscuro -->
+            <button id="theme-toggle" class="neumorphism-button w-12 h-12 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 focus:outline-none">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block"></i>
+            </button>
         </div>
 
-        <!-- Los posts se cargarán aquí, esta sección es estática por ahora -->
-        <div id="posts-container">
-            <!-- Tarjeta de post 1 -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
-                <div class="flex items-center p-4">
-                    <img src="https://placehold.co/40x40/FF5733/ffffff?text=J" alt="Avatar de Juan" class="w-10 h-10 rounded-full mr-3 border-2 border-blue-500">
-                    <div>
-                        <p class="font-semibold text-gray-900 dark:text-white">Juan</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Hace 1 hora</p>
-                    </div>
-                </div>
-                <p class="px-4 text-gray-700 dark:text-gray-300 mb-4">¡Hola a todos! Este es un post de prueba para la actualización.</p>
-                <img src="https://placehold.co/600x400/5833FF/ffffff?text=Paisaje" alt="Post de Juan" class="w-full h-64 object-cover">
-                <div class="flex items-center p-4 border-t border-gray-200 dark:border-gray-700">
-                    <span class="text-gray-600 dark:text-gray-400 mr-4">15 Me gusta</span>
-                    <span class="text-gray-600 dark:text-gray-400">3 comentarios</span>
-                </div>
+        <!-- Tarjeta del formulario de inicio de sesión -->
+        <div class="neumorphism-card p-8 rounded-2xl w-full text-center">
+            <h1 class="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">
+                <span id="login-title">Inicia sesión</span>
+            </h1>
+
+            <div class="flex flex-col space-y-4 mb-6">
+                <input type="text" id="username" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Usuario">
+                <input type="password" id="password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Contraseña">
             </div>
 
-            <!-- Tarjeta de post 2 -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
-                <div class="flex items-center p-4">
-                    <img src="https://placehold.co/40x40/33FF57/ffffff?text=A" alt="Avatar de Ana" class="w-10 h-10 rounded-full mr-3 border-2 border-blue-500">
-                    <div>
-                        <p class="font-semibold text-gray-900 dark:text-white">Ana</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Hace 30 minutos</p>
-                    </div>
-                </div>
-                <p class="px-4 text-gray-700 dark:text-gray-300 mb-4">¡Qué día tan increíble! 😊</p>
-                <img src="https://placehold.co/600x400/33FF57/ffffff?text=Aventura" alt="Post de Ana" class="w-full h-64 object-cover">
-                <div class="flex items-center p-4 border-t border-gray-200 dark:border-gray-700">
-                    <span class="text-gray-600 dark:text-gray-400 mr-4">28 Me gusta</span>
-                    <span class="text-gray-600 dark:text-gray-400">8 comentarios</span>
-                </div>
-            </div>
+            <!-- Botón del ícono morado, sin fondo -->
+            <button class="w-16 h-16 neumorphism-button rounded-full flex items-center justify-center mx-auto mb-6 text-white bg-social-purple">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </button>
+            
+            <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                <span id="signin-button">Iniciar sesión</span>
+            </button>
         </div>
     </div>
 
+    <script>
+        const body = document.body;
+        const themeToggle = document.getElementById('theme-toggle');
+        const languageToggle = document.getElementById('language-toggle');
+        const loginTitle = document.getElementById('login-title');
+        const signinButton = document.getElementById('signin-button');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+
+        // Textos para diferentes idiomas
+        const translations = {
+            'es': {
+                'loginTitle': 'Inicia sesión',
+                'signinButton': 'Iniciar sesión',
+                'usernamePlaceholder': 'Usuario',
+                'passwordPlaceholder': 'Contraseña',
+            },
+            'en': {
+                'loginTitle': 'Sign in',
+                'signinButton': 'Sign in',
+                'usernamePlaceholder': 'Username',
+                'passwordPlaceholder': 'Password',
+            },
+            'fr': {
+                'loginTitle': 'Se connecter',
+                'signinButton': 'Se connecter',
+                'usernamePlaceholder': 'Nom d\'utilisateur',
+                'passwordPlaceholder': 'Mot de passe',
+            }
+        };
+
+        let currentLang = 'es';
+
+        // Función para cambiar el idioma
+        function setLanguage(lang) {
+            currentLang = lang;
+            loginTitle.textContent = translations[lang].loginTitle;
+            signinButton.textContent = translations[lang].signinButton;
+            usernameInput.placeholder = translations[lang].usernamePlaceholder;
+            passwordInput.placeholder = translations[lang].passwordPlaceholder;
+        }
+
+        // Cargar el tema guardado en el almacenamiento local o usar la preferencia del sistema
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                body.classList.add('dark');
+            } else {
+                body.classList.remove('dark');
+            }
+        }
+
+        // Manejador del botón de modo oscuro/claro
+        themeToggle.addEventListener('click', () => {
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Manejador del botón de idioma
+        languageToggle.addEventListener('click', () => {
+            if (currentLang === 'es') {
+                setLanguage('en');
+            } else if (currentLang === 'en') {
+                setLanguage('fr');
+            } else {
+                setLanguage('es');
+            }
+        });
+
+        // Inicializa el tema al cargar la página
+        loadTheme();
+    </script>
 </body>
 </html>
 
