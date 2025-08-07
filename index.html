@@ -1,1019 +1,340 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Red Social</title>
-    <!-- Tailwind CSS para un estilo moderno y responsivo -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        'liquid-bg-light': '#e0e5ec',
-                        'liquid-bg-dark': '#1e2023',
-                        'card-light': '#e0e5ec',
-                        'card-dark': '#2a2d30',
-                        'social-purple': '#5e43f3',
-                    }
-                },
-            },
-        };
-    </script>
-    <!-- Iconos de Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <style>
-        body {
-            background-color: #e0e5ec;
-            color: #1f2937;
-            transition: background-color 0.5s, color 0.5s;
-        }
-        body.dark {
-            background-color: #1e2023;
-            color: #f9fafb;
-        }
+import React, { useState, useEffect } from 'react';
 
-        .neumorphism-card {
-            background-color: #e0e5ec;
-            box-shadow: 6px 6px 12px #b8b8b8, -6px -6px 12px #ffffff;
-        }
-        .dark .neumorphism-card {
-            background-color: #2a2d30;
-            box-shadow: 6px 6px 12px #17181a, -6px -6px 12px #262a2d;
-        }
+// Importa los m\u00f3dulos necesarios de Firebase
+import { initializeApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from 'firebase/auth';
+import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from 'firebase/firestore';
 
-        .neumorphism-input {
-            box-shadow: inset 6px 6px 12px #b8b8b8, inset -6px -6px 12px #ffffff;
-        }
-        .dark .neumorphism-input {
-            box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262d31;
-        }
+// El c\u00f3digo se ejecuta en un entorno donde estas variables est\u00e1n disponibles
+// Son necesarias para conectar la aplicaci\u00f3n a tu base de datos en la nube (Firestore)
+const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        .neumorphism-button {
-            box-shadow: 6px 6px 12px #b8b8b8, -6px -6px 12px #ffffff;
-        }
-        .dark .neumorphism-button {
-            background-color: #2a2d30;
-            box-shadow: 6px 6px 12px #17181a, -6px -6px 12px #262d31;
-        }
-        .neumorphism-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            box-shadow: inset 6px 6px 12px #b8b8b8, inset -6px -6px 12px #ffffff;
-        }
-        .dark .neumorphism-button:disabled {
-            box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262d31;
-        }
+// Aseg\u00farate de que la configuraci\u00f3n de Firebase es v\u00e1lida antes de inicializar la app
+if (!firebaseConfig.projectId) {
+  console.error("Firebase no est\u00e1 configurado correctamente. Por favor, revisa la configuraci\u00f3n.");
+}
 
-        .neumorphism-button:active {
-            box-shadow: inset 6px 6px 12px #b8b8b8, inset -6px -6px 12px #ffffff;
-        }
-        .dark .neumorphism-button:active {
-            box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262d31;
-        }
+// Inicializa la aplicaci\u00f3n de Firebase
+const app = firebaseConfig.projectId ? initializeApp(firebaseConfig) : null;
+const db = app ? getFirestore(app) : null;
+const auth = app ? getAuth(app) : null;
 
-        /* Estilos para el efecto de "vidrio esmerilado" en las p\u00edldoras flotantes */
-        .glass-pill {
-            backdrop-filter: blur(20px);
-            background-color: rgba(224, 229, 236, 0.7);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .dark .glass-pill {
-            background-color: rgba(30, 32, 35, 0.7);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
+// Componente principal de la aplicaci\u00f3n
+const App = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState([]);
+  const [view, setView] = useState('login'); // 'login', 'signup', 'feed'
+  const [error, setError] = useState('');
 
-        /* Estilos para el modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            animation: fadeIn 0.3s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-    </style>
-</head>
-<body class="font-sans antialiased">
-    <!-- Contenedor principal de la aplicaci\u00f3n -->
-    <div id="app-container" class="container mx-auto p-4 md:p-8 max-w-sm flex flex-col min-h-screen">
+  // Efecto para autenticar al usuario al iniciar la aplicaci\u00f3n
+  useEffect(() => {
+    if (!auth || !initialAuthToken) {
+      setLoading(false);
+      return;
+    }
 
-        <!-- Contenedor para los controles de idioma y modo oscuro -->
-        <div class="fixed top-4 right-4 flex space-x-2 z-50">
-            <!-- Bot\u00f3n para cambiar el idioma -->
-            <button id="language-toggle" class="neumorphism-button w-12 h-12 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 focus:outline-none">
-                <i class="fas fa-globe"></i>
-            </button>
-            <!-- Bot\u00f3n para cambiar el modo claro/oscuro -->
-            <button id="theme-toggle" class="neumorphism-button w-12 h-12 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 focus:outline-none">
-                <i class="fas fa-moon dark:hidden"></i>
-                <i class="fas fa-sun hidden dark:block"></i>
-            </button>
-        </div>
+    const signIn = async () => {
+      try {
+        await signInWithCustomToken(auth, initialAuthToken);
+      } catch (e) {
+        console.error("Error al autenticar con token:", e);
+      }
+    };
+    signIn();
 
-        <!-- Pantalla de carga (visible por defecto) -->
-        <div id="loading-screen" class="screen flex flex-grow justify-center items-center">
-            <div class="flex flex-col items-center">
-                <svg class="animate-spin h-10 w-10 text-social-purple" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p class="mt-4 text-gray-500 dark:text-gray-400" data-lang-key="loadingMessage">Cargando...</p>
-            </div>
-        </div>
+    // Listener para los cambios de estado de autenticaci\u00f3n
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+      if (currentUser) {
+        setView('feed');
+      }
+    });
 
-        <!-- Pantalla de inicio de sesi\u00f3n -->
-        <div id="login-screen" class="screen neumorphism-card p-8 rounded-2xl w-full text-center hidden">
-            <div class="mt-8 mb-8">
-                 <!-- C\u00edrculo morado brillante sin fondo -->
-                <svg width="64" height="64" viewBox="0 0 100 100" class="block mx-auto">
-                    <defs>
-                        <radialGradient id="gradient" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" style="stop-color: #5e43f3; stop-opacity: 1;" />
-                            <stop offset="100%" style="stop-color: #5e43f3; stop-opacity: 0;" />
-                        </radialGradient>
-                    </defs>
-                    <circle cx="50" cy="50" r="45" fill="url(#gradient)" />
-                </svg>
-            </div>
-            
-            <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-                <span data-lang-key="loginTitle">Inicia sesi\u00f3n</span>
-            </h1>
+    return () => unsubscribe();
+  }, []);
 
-            <div class="flex flex-col space-y-4 mb-6">
-                <input type="email" id="login-email" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Correo electr\u00f3nico">
-                <input type="password" id="login-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Contrase\u00f1a">
-            </div>
-            
-            <button id="login-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4" disabled>
-                <span data-lang-key="signinButton">Iniciar sesi\u00f3n</span>
-            </button>
-            <a href="#" id="show-signup-link" class="text-blue-500 hover:underline inline-block">
-                <span data-lang-key="createAccountLink">Crear nueva cuenta</span>
-            </a>
-        </div>
-
-        <!-- Pantalla de registro -->
-        <div id="signup-screen" class="screen neumorphism-card p-8 rounded-2xl w-full text-center hidden">
-            <div class="mt-8 mb-8">
-                 <!-- C\u00edrculo morado brillante sin fondo -->
-                <svg width="64" height="64" viewBox="0 0 100 100" class="block mx-auto">
-                    <defs>
-                        <radialGradient id="gradient" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" style="stop-color: #5e43f3; stop-opacity: 1;" />
-                            <stop offset="100%" style="stop-color: #5e43f3; stop-opacity: 0;" />
-                        </radialGradient>
-                    </defs>
-                    <circle cx="50" cy="50" r="45" fill="url(#gradient)" />
-                </svg>
-            </div>
-            
-            <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-                <span data-lang-key="createAccountTitle">Crear cuenta</span>
-            </h1>
-
-            <div class="flex flex-col space-y-4 mb-6">
-                <input type="email" id="signup-email" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Correo electr\u00f3nico">
-                <input type="text" id="signup-username" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Nombre de usuario">
-                <input type="password" id="signup-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Contrase\u00f1a">
-            </div>
-            
-            <button id="signup-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4" disabled>
-                <span data-lang-key="signupButton">Registrarse</span>
-            </button>
-            <a href="#" id="show-login-link" class="text-blue-500 hover:underline inline-block">
-                <span data-lang-key="backToLoginLink">Volver a iniciar sesi\u00f3n</span>
-            </a>
-        </div>
-
-        <!-- Pantalla principal de la red social -->
-        <div id="main-screen" class="screen hidden flex-grow">
-            <!-- Header de la pantalla principal con botones de navegaci\u00f3n (con efecto de vidrio) -->
-            <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-pill z-50 rounded-b-3xl">
-                <!-- Bot\u00f3n de men\u00fa/opciones -->
-                <button id="logout-button" class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-                <div class="flex-grow text-center">
-                    <svg width="40" height="40" viewBox="0 0 100 100" class="inline-block">
-                        <defs>
-                            <radialGradient id="gradient-header" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color: #5e43f3; stop-opacity: 1;" />
-                                <stop offset="100%" style="stop-color: #5e43f3; stop-opacity: 0;" />
-                            </radialGradient>
-                        </defs>
-                        <circle cx="50" cy="50" r="45" fill="url(#gradient-header)" />
-                    </svg>
-                </div>
-                <!-- Bot\u00f3n de perfil flotante en la parte superior derecha (con imagen) -->
-                <button id="profile-button" class="w-10 h-10 rounded-full focus:outline-none neumorphism-button p-0 overflow-hidden">
-                    <img id="user-avatar-main" src="https://placehold.co/40x40/5e43f3/ffffff?text=U" alt="Perfil del usuario" class="w-full h-full object-cover">
-                </button>
-            </div>
-            <div class="pt-20"> <!-- Espacio para el header fijo -->
-                <!-- Secci\u00f3n para la publicaci\u00f3n conversacional -->
-                <div class="neumorphism-card p-4 rounded-xl flex items-center mb-6">
-                    <img id="user-avatar-post" src="https://placehold.co/40x40/FF5733/ffffff?text=U" alt="Avatar de usuario" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
-                    <div id="new-post-trigger" class="flex-grow p-2 rounded-xl neumorphism-input text-gray-500 dark:text-gray-400 text-sm cursor-pointer">
-                        <span data-lang-key="newPostPlaceholder">\u00bfQu\u00e9 est\u00e1s pensando ahora?</span>
-                    </div>
-                </div>
-
-                <!-- Los posts se cargar\u00e1n aqu\u00ed -->
-                <div id="posts-container">
-                    <!-- Mensaje de carga inicial -->
-                    <p id="loading-posts-message" class="text-center text-gray-500 dark:text-gray-400" data-lang-key="loadingPosts">Cargando publicaciones...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pantalla de Perfil -->
-        <div id="profile-screen" class="screen hidden h-full flex-grow pt-16">
-            <!-- Header de la pantalla de perfil -->
-            <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-pill z-50 rounded-b-3xl">
-                <!-- Bot\u00f3n de retroceso para volver a la pantalla principal -->
-                <button id="back-button" class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <div class="flex-grow text-center">
-                    <svg width="40" height="40" viewBox="0 0 100 100" class="inline-block">
-                        <defs>
-                            <radialGradient id="gradient-profile-header" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color: #5e43f3; stop-opacity: 1;" />
-                                <stop offset="100%" style="stop-color: #5e43f3; stop-opacity: 0;" />
-                            </radialGradient>
-                        </defs>
-                        <circle cx="50" cy="50" r="45" fill="url(#gradient-profile-header)" />
-                    </svg>
-                </div>
-                <!-- Bot\u00f3n de opciones en el perfil -->
-                <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-
-            <!-- Contenido de la pantalla de perfil -->
-            <div class="neumorphism-card p-4 rounded-xl flex flex-col items-start mt-8">
-                <div class="flex justify-between items-start w-full mb-4">
-                    <div>
-                        <h2 id="profile-username" class="text-2xl font-bold text-gray-900 dark:text-white">Cargando...</h2>
-                        <p id="profile-userId" class="text-sm text-gray-500 dark:text-gray-400 mt-1 break-all"></p>
-                    </div>
-                    <!-- Imagen de perfil grande y bot\u00f3n de agregar -->
-                    <div class="relative w-20 h-20 rounded-full neumorphism-button overflow-hidden">
-                        <img id="user-avatar-profile" src="https://placehold.co/80x80/5e43f3/ffffff?text=JA" alt="Perfil del usuario" class="w-full h-full object-cover">
-                        <div class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-social-purple flex items-center justify-center text-white text-xs neumorphism-button p-1">
-                             <i class="fas fa-plus"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botones de acci\u00f3n del perfil -->
-                <div class="flex w-full space-x-2 mt-4">
-                    <button class="flex-1 neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
-                        <span data-lang-key="editProfileButton">Editar perfil</span>
-                    </button>
-                    <button class="flex-1 neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
-                        <span data-lang-key="shareProfileButton">Compartir perfil</span>
-                    </button>
-                </div>
-
-                <!-- Pesta\u00f1as de navegaci\u00f3n del perfil -->
-                <div class="flex justify-between w-full mt-6">
-                    <button class="border-b-2 border-social-purple text-social-purple font-semibold p-2 focus:outline-none">
-                        <span data-lang-key="hilosTab">Hilos</span>
-                    </button>
-                    <button class="border-b-2 border-transparent text-gray-500 dark:text-gray-400 p-2 focus:outline-none">
-                        <span data-lang-key="respuestasTab">Respuestas</span>
-                    </button>
-                    <button class="border-b-2 border-transparent text-gray-500 dark:text-gray-400 p-2 focus:outline-none">
-                        <span data-lang-key="multimediaTab">Multimedia</span>
-                    </button>
-                    <button class="border-b-2 border-transparent text-gray-500 dark:text-gray-400 p-2 focus:outline-none">
-                        <span data-lang-key="repostsTab">Reposts</span>
-                    </button>
-                    <button class="border-b-2 border-transparent text-gray-500 dark:text-gray-400 p-2 focus:outline-none">
-                        <span data-lang-key="feedsTab">Feeds</span>
-                    </button>
-                </div>
-
-                <!-- Contenido de las pesta\u00f1as -->
-                <div class="mt-6 w-full">
-                    <p class="text-sm font-semibold mb-2 text-gray-900 dark:text-white" data-lang-key="completeProfileTitle">Completa tu perfil</p>
-                    <div class="flex space-x-4 overflow-x-auto pb-4">
-                        <!-- Tarjeta de Crear Hilo -->
-                        <div class="neumorphism-card p-4 rounded-xl w-64 flex-shrink-0">
-                            <i class="fas fa-pen text-social-purple text-2xl mb-2"></i>
-                            <h4 class="font-bold mb-1 text-gray-900 dark:text-white" data-lang-key="createHiloTitle">Crear hilo</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4" data-lang-key="createHiloDescription">Comparte qu\u00e9 piensas o un momento destacado reciente.</p>
-                            <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-2 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
-                                <span data-lang-key="createButton">Crear</span>
-                            </button>
-                        </div>
-                        <!-- Tarjeta de Seguir Perfiles -->
-                        <div class="neumorphism-card p-4 rounded-xl w-64 flex-shrink-0">
-                            <i class="fas fa-user-plus text-social-purple text-2xl mb-2"></i>
-                            <h4 class="font-bold mb-1 text-gray-900 dark:text-white" data-lang-key="followProfilesTitle">Seguir 10 perfiles</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4" data-lang-key="followProfilesDescription">Llena tu feed de hilos que te interesen.</p>
-                            <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-2 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
-                                <span data-lang-key="viewProfilesButton">Ver perfiles</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
+  // Efecto para escuchar los posts en tiempo real
+  useEffect(() => {
+    if (!db || !user) return;
     
-    <!-- Barra de navegaci\u00f3n inferior flotante (en forma de p\u00edldora) -->
-    <div id="bottom-navbar" class="fixed bottom-4 left-1/2 -translate-x-1/2 flex justify-around p-2 glass-pill rounded-full shadow-lg z-50 w-full max-w-xs hidden">
-        <button id="home-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple focus:outline-none">
-            <i class="fas fa-home"></i>
-        </button>
-        <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
-            <i class="fas fa-envelope"></i>
-        </button>
-        <button id="create-post-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
-            <i class="fas fa-plus"></i>
-        </button>
-        <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
-            <i class="fas fa-heart"></i>
-        </button>
-        <button id="search-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
-            <i class="fas fa-search"></i>
-        </button>
-    </div>
+    // Obtiene los posts de la colecci\u00f3n 'posts' y los actualiza en tiempo real
+    const q = query(collection(db, 'posts'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const postsData = [];
+      snapshot.forEach((doc) => {
+        postsData.push({ id: doc.id, ...doc.data() });
+      });
+      // Ordena los posts por fecha de creaci\u00f3n (el m\u00e1s nuevo primero)
+      postsData.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+      setPosts(postsData);
+    }, (err) => {
+      console.error("Error al obtener los posts:", err);
+      setError("Error al cargar los posts. Int\u00e9ntalo de nuevo.");
+    });
 
-    <!-- Modal para el men\u00fa de publicaci\u00f3n -->
-    <div id="new-post-modal" class="modal">
-        <div class="modal-content neumorphism-card p-6 rounded-2xl w-11/12 max-w-xs text-center">
-            <h3 class="text-xl font-bold mb-4" data-lang-key="newPostModalTitle">Crear nueva publicaci\u00f3n</h3>
-            <textarea id="post-text" class="neumorphism-input p-4 rounded-xl w-full h-32 focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 mb-4" placeholder="Escribe tu publicaci\u00f3n aqu\u00ed..."></textarea>
-            <div class="flex flex-col space-y-4">
-                <button id="publish-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300" disabled>
-                    <span data-lang-key="publishButton">Publicar</span>
-                </button>
-                <button id="close-modal-button" class="mt-4 text-blue-500 hover:underline">
-                    <span data-lang-key="closeButton">Cancelar</span>
-                </button>
-            </div>
-        </div>
-    </div>
+    return () => unsubscribe();
+  }, [user, db]);
+
+  // Funci\u00f3n para crear una nueva cuenta
+  const handleSignUp = async (email, password) => {
+    setError('');
+    try {
+      if (!auth) throw new Error("Servicio de autenticaci\u00f3n no disponible.");
+      await createUserWithEmailAndPassword(auth, email, password);
+      // El onAuthStateChanged se encargar\u00e1 de actualizar el estado del usuario
+    } catch (e) {
+      setError('Error al crear la cuenta: ' + e.message);
+    }
+  };
+
+  // Funci\u00f3n para iniciar sesi\u00f3n
+  const handleLogin = async (email, password) => {
+    setError('');
+    try {
+      if (!auth) throw new Error("Servicio de autenticaci\u00f3n no disponible.");
+      await signInWithEmailAndPassword(auth, email, password);
+      // El onAuthStateChanged se encargar\u00e1 de actualizar el estado del usuario
+    } catch (e) {
+      setError('Error al iniciar sesi\u00f3n: ' + e.message);
+    }
+  };
+
+  // Funci\u00f3n para cerrar sesi\u00f3n
+  const handleLogout = async () => {
+    setError('');
+    try {
+      if (!auth) throw new Error("Servicio de autenticaci\u00f3n no disponible.");
+      await signOut(auth);
+      setView('login');
+    } catch (e) {
+      setError('Error al cerrar sesi\u00f3n: ' + e.message);
+    }
+  };
+
+  // Muestra la pantalla de carga si a\u00fan se est\u00e1n cargando los datos
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-xl font-medium text-gray-700">Cargando...</div>
+      </div>
+    );
+  }
+
+  // Componente del formulario de inicio de sesi\u00f3n
+  const LoginForm = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     
-    <!-- Modal de error gen\u00e9rico -->
-    <div id="error-modal" class="modal">
-        <div class="modal-content neumorphism-card p-6 rounded-2xl w-11/12 max-w-xs text-center">
-            <h3 class="text-xl font-bold mb-4 text-red-500">¡Error!</h3>
-            <p id="error-message" class="mb-6 text-gray-700 dark:text-gray-300"></p>
-            <button id="close-error-modal" class="neumorphism-button font-semibold p-3 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
-                Aceptar
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      handleLogin(email, password);
+    };
+
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white p-8 rounded-lg shadow-md space-y-6">
+          <h2 className="text-3xl font-bold text-center text-gray-800">Iniciar Sesi\u00f3n</h2>
+          {error && <div className="text-red-500 text-center">{error}</div>}
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Correo electr\u00f3nico"
+            required
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Contrase\u00f1a"
+            required
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button type="submit" className="w-full bg-blue-600 text-white p-3 rounded-md font-semibold hover:bg-blue-700 transition duration-200">
+            Entrar
+          </button>
+          <div className="text-center text-sm text-gray-600 mt-4">
+            \u00bfNo tienes una cuenta?{' '}
+            <button
+              type="button"
+              onClick={() => setView('signup')}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Reg\u00edstrate
             </button>
-        </div>
-    </div>
+          </div>
+        </form>
+      </div>
+    );
+  };
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, query, serverTimestamp, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  // Componente del formulario de registro
+  const SignUpForm = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      handleSignUp(email, password);
+    };
 
-        // Variables globales proporcionadas por el entorno de Canvas o valores de respaldo
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white p-8 rounded-lg shadow-md space-y-6">
+          <h2 className="text-3xl font-bold text-center text-gray-800">Crear Cuenta</h2>
+          {error && <div className="text-red-500 text-center">{error}</div>}
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Correo electr\u00f3nico"
+            required
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Contrase\u00f1a"
+            required
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button type="submit" className="w-full bg-green-600 text-white p-3 rounded-md font-semibold hover:bg-green-700 transition duration-200">
+            Registrarse
+          </button>
+          <div className="text-center text-sm text-gray-600 mt-4">
+            \u00bfYa tienes una cuenta?{' '}
+            <button
+              type="button"
+              onClick={() => setView('login')}
+              className="text-green-600 hover:underline font-medium"
+            >
+              Iniciar Sesi\u00f3n
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  };
 
-        // Inicializar Firebase. Esto se hace una vez al cargar la p\u00e1gina.
-        let app = null;
-        let auth = null;
-        let db = null;
-        let isFirebaseReady = false;
-        let postsListenerUnsubscribe = null; // Para detener la escucha de posts cuando se cierra sesi\u00f3n
+  // Componente del formulario para crear un nuevo post
+  const CreatePostForm = () => {
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [isPosting, setIsPosting] = useState(false);
 
-        if (firebaseConfig) {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            isFirebaseReady = true;
-            console.log("[Firebase] Inicializado con configuraci\u00f3n del entorno.");
-        } else {
-            // Si la configuraci\u00f3n no est\u00e1 disponible, no podemos usar Firebase.
-            console.error("[Firebase] No se encontr\u00f3 la configuraci\u00f3n de Firebase.");
-        }
-
-        // Variables del estado de la aplicaci\u00f3n
-        let currentUser = null;
-        let username = 'Usuario';
-        let userId = null;
-        
-        // Elementos del DOM
-        const body = document.body;
-        const themeToggle = document.getElementById('theme-toggle');
-        const languageToggle = document.getElementById('language-toggle');
-        const appContainer = document.getElementById('app-container');
-        const loadingScreen = document.getElementById('loading-screen');
-        const loginScreen = document.getElementById('login-screen');
-        const signupScreen = document.getElementById('signup-screen');
-        const mainScreen = document.getElementById('main-screen');
-        const profileScreen = document.getElementById('profile-screen');
-        const bottomNavbar = document.getElementById('bottom-navbar');
-        const showSignupLink = document.getElementById('show-signup-link');
-        const showLoginLink = document.getElementById('show-login-link');
-        const loginEmailInput = document.getElementById('login-email');
-        const loginPasswordInput = document.getElementById('login-password');
-        const loginButton = document.getElementById('login-button');
-        const signupEmailInput = document.getElementById('signup-email');
-        const signupUsernameInput = document.getElementById('signup-username');
-        const signupPasswordInput = document.getElementById('signup-password');
-        const signupButton = document.getElementById('signup-button');
-        const logoutButton = document.getElementById('logout-button');
-        const newPostTrigger = document.getElementById('new-post-trigger');
-        const newPostModal = document.getElementById('new-post-modal');
-        const postTextarea = document.getElementById('post-text');
-        const publishButton = document.getElementById('publish-button');
-        const closeModalButton = document.getElementById('close-modal-button');
-        const errorModal = document.getElementById('error-modal');
-        const errorMessage = document.getElementById('error-message');
-        const closeErrorModalButton = document.getElementById('close-error-modal');
-        const profileButton = document.getElementById('profile-button');
-        const backButton = document.getElementById('back-button');
-        const homeButton = document.getElementById('home-button');
-        const postsContainer = document.getElementById('posts-container');
-        const profileUsername = document.getElementById('profile-username');
-        const profileUserId = document.getElementById('profile-userId');
-        const userAvatarMain = document.getElementById('user-avatar-main');
-        const userAvatarPost = document.getElementById('user-avatar-post');
-        const userAvatarProfile = document.getElementById('user-avatar-profile');
-        const createPostButton = document.getElementById('create-post-button');
-        const loadingPostsMessage = document.getElementById('loading-posts-message');
-
-
-        // Textos para diferentes idiomas
-        const translations = {
-            'es': {
-                'loginTitle': 'Inicia sesi\u00f3n',
-                'signinButton': 'Iniciar sesi\u00f3n',
-                'createAccountLink': 'Crear nueva cuenta',
-                'createAccountTitle': 'Crear cuenta',
-                'signupButton': 'Registrarse',
-                'backToLoginLink': 'Volver a iniciar sesi\u00f3n',
-                'mainTitle': 'Inicio',
-                'newPostPlaceholder': '\u00bfQu\u00e9 est\u00e1s pensando ahora?',
-                'newPostModalTitle': 'Crear nueva publicaci\u00f3n',
-                'publishButton': 'Publicar',
-                'closeButton': 'Cancelar',
-                'usernamePlaceholder': 'Usuario',
-                'passwordPlaceholder': 'Contrase\u00f1a',
-                'emailPlaceholder': 'Correo electr\u00f3nico',
-                'signupEmailPlaceholder': 'Correo electr\u00f3nico',
-                'signupUsernamePlaceholder': 'Nombre de usuario',
-                'signupPasswordPlaceholder': 'Contrase\u00f1a',
-                'editProfileButton': 'Editar perfil',
-                'shareProfileButton': 'Compartir perfil',
-                'hilosTab': 'Hilos',
-                'respuestasTab': 'Respuestas',
-                'multimediaTab': 'Multimedia',
-                'repostsTab': 'Reposts',
-                'feedsTab': 'Feeds',
-                'completeProfileTitle': 'Completa tu perfil',
-                'createHiloTitle': 'Crear hilo',
-                'createHiloDescription': 'Comparte qu\u00e9 piensas o un momento destacado reciente.',
-                'createButton': 'Crear',
-                'followProfilesTitle': 'Seguir 10 perfiles',
-                'followProfilesDescription': 'Llena tu feed de hilos que te interesen.',
-                'viewProfilesButton': 'Ver perfiles',
-                'logoutButton': 'Cerrar sesi\u00f3n',
-                'loadingPosts': 'Cargando publicaciones...',
-                'noPosts': 'A\u00fan no hay publicaciones. ¡S\u00e9 el primero en publicar!',
-                'postPublished': '¡Publicaci\u00f3n enviada!',
-                'loadingMessage': 'Cargando...',
-                'firebaseNotAvailable': 'Los servicios de Firebase no est\u00e1n disponibles.'
-            },
-            'en': {
-                'loginTitle': 'Sign in',
-                'signinButton': 'Sign in',
-                'createAccountLink': 'Create new account',
-                'createAccountTitle': 'Create account',
-                'signupButton': 'Register',
-                'backToLoginLink': 'Back to login',
-                'mainTitle': 'Home',
-                'newPostPlaceholder': 'What are you thinking about now?',
-                'newPostModalTitle': 'Create new post',
-                'publishButton': 'Publish',
-                'closeButton': 'Cancel',
-                'usernamePlaceholder': 'Username',
-                'passwordPlaceholder': 'Password',
-                'emailPlaceholder': 'Email',
-                'signupEmailPlaceholder': 'Email',
-                'signupUsernamePlaceholder': 'Username',
-                'signupPasswordPlaceholder': 'Password',
-                'editProfileButton': 'Edit profile',
-                'shareProfileButton': 'Share profile',
-                'hilosTab': 'Threads',
-                'respuestasTab': 'Replies',
-                'multimediaTab': 'Media',
-                'repostsTab': 'Reposts',
-                'feedsTab': 'Feeds',
-                'completeProfileTitle': 'Complete your profile',
-                'createHiloTitle': 'Create thread',
-                'createHiloDescription': 'Share what\'s on your mind or a recent highlight.',
-                'createButton': 'Create',
-                'followProfilesTitle': 'Follow 10 profiles',
-                'followProfilesDescription': 'Fill your feed with threads you care about.',
-                'viewProfilesButton': 'View profiles',
-                'logoutButton': 'Sign Out',
-                'loadingPosts': 'Loading posts...',
-                'noPosts': 'No posts yet. Be the first to post!',
-                'postPublished': 'Post sent!',
-                'loadingMessage': 'Loading...',
-                'firebaseNotAvailable': 'Firebase services are not available.'
-            },
-            'fr': {
-                'loginTitle': 'Se connecter',
-                'signinButton': 'Se connecter',
-                'createAccountLink': 'Cr\u00e9er un nouveau compte',
-                'createAccountTitle': 'Cr\u00e9er un compte',
-                'signupButton': 'S\'inscrire',
-                'backToLoginLink': 'Retour \u00e0 la connexion',
-                'mainTitle': 'Accueil',
-                'newPostPlaceholder': '\u00c0 quoi pensez-vous ?',
-                'newPostModalTitle': 'Cr\u00e9er une nouvelle publication',
-                'publishButton': 'Publier',
-                'closeButton': 'Annuler',
-                'usernamePlaceholder': 'Nom d\'utilisateur',
-                'passwordPlaceholder': 'Mot de passe',
-                'emailPlaceholder': 'E-mail',
-                'signupEmailPlaceholder': 'E-mail',
-                'signupUsernamePlaceholder': 'Nom d\'utilisateur',
-                'signupPasswordPlaceholder': 'Mot de passe',
-                'editProfileButton': 'Modifier le profil',
-                'shareProfileButton': 'Partager le profil',
-                'hilosTab': 'Hilos',
-                'respuestasTab': 'R\u00e9ponses',
-                'multimediaTab': 'Multim\u00e9dia',
-                'repostsTab': 'Reposts',
-                'feedsTab': 'Feeds',
-                'completeProfileTitle': 'Compl\u00e9tez votre profil',
-                'createHiloTitle': 'Cr\u00e9er un fil',
-                'createHiloDescription': 'Partagez ce que vous pensez ou un moment marquant.',
-                'createButton': 'Cr\u00e9er',
-                'followProfilesTitle': 'Suivre 10 profils',
-                'followProfilesDescription': 'Remplissez votre fil avec des fils qui vous int\u00e9ressent.',
-                'viewProfilesButton': 'Voir les profils',
-                'logoutButton': 'Se d\u00e9connecter',
-                'loadingPosts': 'Chargement des publications...',
-                'noPosts': 'Aucune publication pour le moment. Soyez le premier \u00e0 publier !',
-                'postPublished': 'Publication envoy\u00e9e !',
-                'loadingMessage': 'Chargement...',
-                'firebaseNotAvailable': 'Los servicios Firebase no est\u00e1n disponibles.'
-            }
-        };
-
-        let currentLang = 'es';
-        
-        // Funci\u00f3n para cambiar de pantalla
-        function showScreen(screen) {
-            console.log(`[UI] Cambiando a la pantalla: ${screen.id}`);
-            const allScreens = document.querySelectorAll('.screen');
-            allScreens.forEach(s => {
-                s.classList.add('hidden');
-            });
-            screen.classList.remove('hidden');
-
-            if (screen.id === 'main-screen' || screen.id === 'profile-screen') {
-                appContainer.classList.add('justify-start');
-                appContainer.classList.remove('justify-center');
-                bottomNavbar.classList.remove('hidden');
-            } else {
-                appContainer.classList.remove('justify-start');
-                appContainer.classList.add('justify-center');
-                bottomNavbar.classList.add('hidden');
-            }
-        }
-
-        // Funci\u00f3n para cambiar el idioma
-        function setLanguage(lang) {
-            currentLang = lang;
-            document.querySelectorAll('[data-lang-key]').forEach(element => {
-                const key = element.getAttribute('data-lang-key');
-                if (translations[lang] && translations[lang][key]) {
-                    element.textContent = translations[lang][key];
-                }
-            });
-            // Actualiza los placeholders
-            document.getElementById('login-email').placeholder = translations[lang].emailPlaceholder;
-            document.getElementById('login-password').placeholder = translations[lang].passwordPlaceholder;
-            document.getElementById('signup-email').placeholder = translations[lang].signupEmailPlaceholder;
-            document.getElementById('signup-username').placeholder = translations[lang].signupUsernamePlaceholder;
-            document.getElementById('signup-password').placeholder = translations[lang].signupPasswordPlaceholder;
-        }
-
-        // Funci\u00f3n para mostrar modal de error
-        function showErrorMessage(message) {
-            errorMessage.textContent = message;
-            errorModal.style.display = 'flex';
-        }
-
-        // Cargar el tema guardado en el almacenamiento local o usar la preferencia del sistema
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                body.classList.add('dark');
-            } else {
-                body.classList.remove('dark');
-            }
-        }
-
-        // Manejador del bot\u00f3n de modo oscuro/claro
-        themeToggle.addEventListener('click', () => {
-            if (body.classList.contains('dark')) {
-                body.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (!db) return;
+      setIsPosting(true);
+      try {
+        const postsCollectionRef = collection(db, 'posts');
+        await addDoc(postsCollectionRef, {
+          title,
+          content,
+          authorId: user.uid,
+          authorEmail: user.email,
+          createdAt: serverTimestamp(),
         });
+        setTitle('');
+        setContent('');
+      } catch (e) {
+        console.error("Error al a\u00f1adir el post: ", e);
+      }
+      setIsPosting(false);
+    };
 
-        // Manejador del bot\u00f3n de idioma
-        languageToggle.addEventListener('click', () => {
-            if (currentLang === 'es') {
-                setLanguage('en');
-            } else if (currentLang === 'en') {
-                setLanguage('fr');
-            } else {
-                setLanguage('es');
-            }
-        });
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h3 className="text-2xl font-bold mb-4 text-gray-800">Crear un Nuevo Post</h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="T\u00edtulo del post"
+            required
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="\u00bfQu\u00e9 est\u00e1s pensando?"
+            required
+            rows="4"
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+          ></textarea>
+          <button
+            type="submit"
+            disabled={isPosting}
+            className="w-full bg-purple-600 text-white p-3 rounded-md font-semibold hover:bg-purple-700 transition duration-200 disabled:bg-gray-400"
+          >
+            {isPosting ? 'Publicando...' : 'Publicar'}
+          </button>
+        </form>
+      </div>
+    );
+  };
 
-        // Manejadores de eventos para la navegaci\u00f3n entre pantallas
-        showSignupLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showScreen(signupScreen);
-        });
+  // Componente que muestra el feed (la p\u00e1gina principal de la red social)
+  const Feed = () => {
+    return (
+      <div className="min-h-screen bg-gray-100 p-4 font-sans">
+        <header className="flex justify-between items-center bg-white p-6 rounded-lg shadow-md mb-6">
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
+            Mi Red Social
+          </h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-red-600 transition duration-200"
+          >
+            Salir
+          </button>
+        </header>
 
-        showLoginLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showScreen(loginScreen);
-        });
+        <CreatePostForm />
 
-        // L\u00f3gica de inicio de sesi\u00f3n con Firebase
-        loginButton.addEventListener('click', async () => {
-            const email = loginEmailInput.value;
-            const password = loginPasswordInput.value;
-
-            // Verificar que Firebase est\u00e9 listo antes de continuar
-            if (!isFirebaseReady) {
-                showErrorMessage(translations[currentLang].firebaseNotAvailable);
-                return;
-            }
-
-            try {
-                console.log('[Auth] Intentando iniciar sesi\u00f3n...');
-                showScreen(loadingScreen);
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                console.error('[Auth] Error al iniciar sesi\u00f3n:', error);
-                showErrorMessage('Error al iniciar sesi\u00f3n: ' + error.message);
-                showScreen(loginScreen);
-            }
-        });
-        
-        // L\u00f3gica de registro con Firebase
-        signupButton.addEventListener('click', async () => {
-            const email = signupEmailInput.value;
-            const password = signupPasswordInput.value;
-            const newUsername = signupUsernameInput.value;
-            
-            // Verificar que Firebase est\u00e9 listo antes de continuar
-            if (!isFirebaseReady) {
-                showErrorMessage(translations[currentLang].firebaseNotAvailable);
-                return;
-            }
-
-            try {
-                console.log('[Auth] Intentando registrar un nuevo usuario...');
-                showScreen(loadingScreen);
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                const userDocRef = doc(db, `artifacts/${appId}/users/${user.uid}/profiles`, user.uid);
-                await setDoc(userDocRef, {
-                    username: newUsername,
-                    createdAt: serverTimestamp()
-                });
-            } catch (error) {
-                console.error('[Auth] Error al registrar usuario:', error);
-                showErrorMessage('Error al registrar usuario: ' + error.message);
-                showScreen(signupScreen);
-            }
-        });
-
-        // L\u00f3gica para cerrar sesi\u00f3n
-        logoutButton.addEventListener('click', async () => {
-            try {
-                console.log('[Auth] Intentando cerrar sesi\u00f3n...');
-                if (postsListenerUnsubscribe) {
-                    postsListenerUnsubscribe(); // Detener la escucha de posts
-                }
-                if (isFirebaseReady) {
-                    await signOut(auth);
-                } else {
-                    console.log("[Auth] Cierre de sesi\u00f3n simulado, ya que no hay auth.");
-                    showScreen(loginScreen);
-                }
-            } catch (error) {
-                console.error('[Auth] Error al cerrar sesi\u00f3n:', error);
-                showErrorMessage('Error al cerrar sesi\u00f3n: ' + error.message);
-            }
-        });
-        
-        // Manejadores para el modal de publicaci\u00f3n
-        newPostTrigger.addEventListener('click', () => {
-            if (currentUser) {
-                newPostModal.style.display = 'flex';
-            } else {
-                showErrorMessage('Debes iniciar sesi\u00f3n para publicar.');
-            }
-        });
-        
-        createPostButton.addEventListener('click', () => {
-            if (currentUser) {
-                newPostModal.style.display = 'flex';
-            } else {
-                showErrorMessage('Debes iniciar sesi\u00f3n para publicar.');
-            }
-        });
-
-        closeModalButton.addEventListener('click', () => {
-            newPostModal.style.display = 'none';
-        });
-
-        // Cierra el modal si se hace clic fuera de \u00e9l
-        window.addEventListener('click', (event) => {
-            if (event.target === newPostModal) {
-                newPostModal.style.display = 'none';
-            }
-        });
-
-        // Cierra el modal de error
-        closeErrorModalButton.addEventListener('click', () => {
-            errorModal.style.display = 'none';
-        });
-
-        // L\u00f3gica para publicar un nuevo post
-        publishButton.addEventListener('click', async () => {
-            const postContent = postTextarea.value.trim();
-            if (postContent === '') {
-                showErrorMessage('El contenido del post no puede estar vac\u00edo.');
-                return;
-            }
-            if (!db) {
-                 showErrorMessage(translations[currentLang].firebaseNotAvailable);
-                 return;
-            }
-
-            try {
-                // Agregar el post a la colecci\u00f3n p\u00fablica
-                await addDoc(collection(db, `artifacts/${appId}/public/data/posts`), {
-                    content: postContent,
-                    authorId: userId,
-                    authorUsername: username,
-                    timestamp: serverTimestamp(),
-                    likes: 0
-                });
-                postTextarea.value = '';
-                newPostModal.style.display = 'none';
-            } catch (error) {
-                showErrorMessage('Error al publicar el post: ' + error.message);
-            }
-        });
-
-        // L\u00f3gica para el bot\u00f3n de perfil: Muestra la pantalla de perfil
-        profileButton.addEventListener('click', () => {
-            showScreen(profileScreen);
-        });
-
-        // L\u00f3gica para el bot\u00f3n de retroceso en la pantalla de perfil
-        backButton.addEventListener('click', () => {
-            showScreen(mainScreen);
-        });
-
-        // L\u00f3gica para el bot\u00f3n de inicio en la barra de navegaci\u00f3n
-        homeButton.addEventListener('click', () => {
-            showScreen(mainScreen);
-        });
-        
-        // Funci\u00f3n para renderizar un post en la pantalla
-        function renderPost(post) {
-            const postElement = document.createElement('div');
-            postElement.className = 'neumorphism-card p-4 rounded-xl overflow-hidden mb-6';
-            const timestamp = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleString() : 'Justo ahora';
-            
-            postElement.innerHTML = `
-                <div class="flex items-center p-2">
-                    <img src="https://placehold.co/40x40/5e43f3/ffffff?text=${post.authorUsername[0]}" alt="Avatar de ${post.authorUsername}" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
-                    <div>
-                        <p class="font-semibold text-gray-900 dark:text-white">${post.authorUsername}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">${timestamp}</p>
-                    </div>
+        <main className="space-y-4">
+          {posts.length > 0 ? (
+            posts.map(post => (
+              <div key={post.id} className="bg-white p-6 rounded-lg shadow-md">
+                <h4 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h4>
+                <p className="text-gray-700 mb-4">{post.content}</p>
+                <div className="text-sm text-gray-500">
+                  <span className="font-medium">{post.authorEmail}</span> -{' '}
+                  {post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString() : 'Fecha desconocida'}
                 </div>
-                <p class="px-2 text-gray-700 dark:text-gray-300 mb-4">${post.content}</p>
-                <div class="flex items-center p-2 border-t border-gray-200 dark:border-gray-700">
-                    <span class="text-gray-600 dark:text-gray-400 mr-4">${post.likes} Me gusta</span>
-                </div>
-            `;
-            return postElement;
-        }
+              </div>
+            ))
+          ) : (
+            <div className="bg-white p-6 rounded-lg shadow-md text-center text-gray-600">
+              A\u00fan no hay publicaciones. \u00a1S\u00e9 el primero en publicar!
+            </div>
+          )}
+        </main>
 
-        // Funci\u00f3n para escuchar los posts de Firestore en tiempo real
-        function setupPostsListener() {
-            if (!isFirebaseReady) {
-                console.log("[Firestore] No se puede configurar el listener de posts, Firebase no est\u00e1 listo.");
-                postsContainer.innerHTML = `<p class="text-center text-red-500">Error al cargar publicaciones: servicios no disponibles.</p>`;
-                return;
-            }
-            if (postsListenerUnsubscribe) {
-                postsListenerUnsubscribe(); // Detener el listener anterior
-            }
-            
-            postsContainer.innerHTML = `<p id="loading-posts-message" class="text-center text-gray-500 dark:text-gray-400" data-lang-key="loadingPosts">Cargando publicaciones...</p>`;
+        <footer className="mt-8 text-center text-gray-500 text-sm">
+          <p>\u00a9 2024 Mi Red Social. Todos los derechos reservados.</p>
+        </footer>
+      </div>
+    );
+  };
 
-            const postsCollectionRef = collection(db, `artifacts/${appId}/public/data/posts`);
-            postsListenerUnsubscribe = onSnapshot(postsCollectionRef, (snapshot) => {
-                postsContainer.innerHTML = ''; // Limpiar el contenedor
-                if (snapshot.empty) {
-                    postsContainer.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400">${translations[currentLang].noPosts}</p>`;
-                } else {
-                    const sortedPosts = [];
-                    snapshot.forEach(doc => {
-                        const postData = doc.data();
-                        postData.id = doc.id; // Guardar el ID
-                        sortedPosts.push(postData);
-                    });
-                    
-                    // Ordenar posts por fecha de creaci\u00f3n de forma descendente
-                    sortedPosts.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-                    
-                    sortedPosts.forEach(post => {
-                        postsContainer.appendChild(renderPost(post));
-                    });
-                }
-            }, (error) => {
-                showErrorMessage('Error al cargar publicaciones: ' + error.message);
-                postsContainer.innerHTML = `<p class="text-center text-red-500">Error al cargar publicaciones.</p>`;
-                postsListenerUnsubscribe = null;
-            });
-        }
-        
-        // Funci\u00f3n para obtener el nombre de usuario del perfil
-        async function fetchUsername(uid) {
-            if (!isFirebaseReady) return 'Usuario';
-            try {
-                const profilesCollectionRef = collection(db, `artifacts/${appId}/users/${uid}/profiles`);
-                const profileSnapshot = await getDocs(profilesCollectionRef);
-                if (!profileSnapshot.empty) {
-                    const profileDoc = profileSnapshot.docs[0];
-                    return profileDoc.data().username;
-                }
-            } catch (error) {
-                console.error("[Firestore] Error al obtener el nombre de usuario:", error);
-                return 'Usuario';
-            }
-            return 'Usuario';
-        }
+  // Renderiza la vista actual seg\u00fan el estado
+  switch (view) {
+    case 'signup':
+      return <SignUpForm />;
+    case 'feed':
+      return <Feed />;
+    case 'login':
+    default:
+      return <LoginForm />;
+  }
+};
 
-        // Listener de autenticaci\u00f3n principal. Esta es la funci\u00f3n m\u00e1s importante.
-        // Se ejecuta cada vez que el estado del usuario cambia (inicia o cierra sesi\u00f3n).
-        if (isFirebaseReady) {
-            onAuthStateChanged(auth, async (user) => {
-                console.log('[Auth] Evento onAuthStateChanged disparado. Usuario:', user ? user.uid : 'null');
-                
-                // Habilitamos los botones aqu\u00ed, una vez que Firebase nos confirma que todo est\u00e1 listo.
-                loginButton.disabled = false;
-                signupButton.disabled = false;
-                publishButton.disabled = false;
-
-                if (user) {
-                    // Usuario autenticado
-                    currentUser = user;
-                    userId = user.uid;
-
-                    try {
-                        // Obtenemos el nombre de usuario y configuramos el listener de posts
-                        const fetchedUsername = await fetchUsername(userId);
-                        username = fetchedUsername;
-                        setupPostsListener();
-                        
-                        // Actualizamos la interfaz con la informaci\u00f3n del usuario
-                        profileUsername.textContent = username;
-                        profileUserId.textContent = userId;
-                        userAvatarMain.src = `https://placehold.co/40x40/5e43f3/ffffff?text=${username[0]}`;
-                        userAvatarPost.src = `https://placehold.co/40x40/FF5733/ffffff?text=${username[0]}`;
-                        userAvatarProfile.src = `https://placehold.co/80x80/5e43f3/ffffff?text=${username[0]}`;
-                        
-                        showScreen(mainScreen);
-
-                    } catch (error) {
-                        console.error('[App] Error al cargar datos del usuario:', error);
-                        showErrorMessage('Error al cargar datos del usuario: ' + error.message);
-                        await signOut(auth); // Cerramos sesi\u00f3n si hay un error
-                    }
-
-                } else {
-                    // No hay usuario, mostramos la pantalla de inicio
-                    console.log('[App] No hay usuario, mostrando pantalla de login.');
-                    currentUser = null;
-                    userId = null;
-                    username = 'Usuario An\u00f3nimo'; // Nombre de usuario por defecto
-                    // Genera un ID de usuario an\u00f3nimo \u00fanico
-                    userId = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-
-                    if (postsListenerUnsubscribe) {
-                        postsListenerUnsubscribe();
-                    }
-
-                    // Tambi\u00e9n actualizamos la interfaz para el usuario an\u00f3nimo
-                    profileUsername.textContent = username;
-                    profileUserId.textContent = userId;
-                    userAvatarMain.src = `https://placehold.co/40x40/5e43f3/ffffff?text=A`;
-                    userAvatarPost.src = `https://placehold.co/40x40/FF5733/ffffff?text=A`;
-                    userAvatarProfile.src = `https://placehold.co/80x80/5e43f3/ffffff?text=A`;
-
-                    // Mostrar la pantalla principal, ya que ahora se permite la navegaci\u00f3n an\u00f3nima
-                    showScreen(mainScreen);
-
-                    // Desactivar los botones que requieren autenticaci\u00f3n para publicar
-                    publishButton.disabled = true;
-                    newPostTrigger.addEventListener('click', () => {
-                         showErrorMessage('Debes iniciar sesi\u00f3n para publicar.');
-                    });
-                    createPostButton.addEventListener('click', () => {
-                        showErrorMessage('Debes iniciar sesi\u00f3n para publicar.');
-                    });
-                }
-            });
-        } else {
-            // Si Firebase no est\u00e1 disponible, no podemos hacer nada.
-            showErrorMessage(translations[currentLang].firebaseNotAvailable);
-            showScreen(loginScreen);
-        }
-        
-        // Esta funci\u00f3n se ejecuta cuando se carga la p\u00e1gina.
-        // Solo configura el tema y el idioma, y muestra la pantalla de carga.
-        // Espera a que el listener de autenticaci\u00f3n haga el resto.
-        window.onload = function() {
-            console.log('[App] Aplicaci\u00f3n iniciada. Configurando UI...');
-            loadTheme();
-            setLanguage('es');
-            
-            // Si Firebase est\u00e1 listo, mostramos la pantalla de carga y esperamos al onAuthStateChanged
-            if (isFirebaseReady) {
-                showScreen(loadingScreen);
-                // Si el entorno tiene un token, lo usamos para autenticar
-                if (typeof __initial_auth_token !== 'undefined') {
-                    console.log("[Auth] Usando token de autenticaci\u00f3n personalizado.");
-                     signInWithCustomToken(auth, __initial_auth_token)
-                        .then(() => {
-                            console.log("[Auth] Inicio de sesi\u00f3n con token personalizado exitoso.");
-                        })
-                        .catch((error) => {
-                            console.error("[Auth] Error al iniciar sesi\u00f3n con token personalizado:", error);
-                            signInAnonymously(auth);
-                        });
-                } else {
-                    // De lo contrario, intentamos un inicio de sesi\u00f3n an\u00f3nimo.
-                    signInAnonymously(auth)
-                        .then(() => {
-                            console.log("[Auth] Inicio de sesi\u00f3n an\u00f3nimo exitoso.");
-                        })
-                        .catch((error) => {
-                            console.error("[Auth] Error al iniciar sesi\u00f3n an\u00f3nima:", error);
-                        });
-                }
-            } else {
-                // Si Firebase no est\u00e1 listo, mostramos directamente el error.
-                showErrorMessage(translations[currentLang].firebaseNotAvailable);
-                showScreen(loginScreen);
-            }
-        }
-    </script>
-</body>
-</html>
+export default App;
 
