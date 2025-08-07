@@ -199,9 +199,9 @@
                         <circle cx="50" cy="50" r="45" fill="url(#gradient-header)" />
                     </svg>
                 </div>
-                <!-- Botón de perfil flotante en la parte superior derecha -->
-                <button id="profile-button" class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-user"></i>
+                <!-- Botón de perfil flotante en la parte superior derecha (con imagen) -->
+                <button id="profile-button" class="w-10 h-10 rounded-full focus:outline-none neumorphism-button p-0 overflow-hidden">
+                    <img src="https://placehold.co/40x40/5e43f3/ffffff?text=U" alt="Perfil del usuario" class="w-full h-full object-cover">
                 </button>
             </div>
             <div class="pt-20"> <!-- Espacio para el header fijo -->
@@ -234,25 +234,21 @@
                 </div>
             </div>
             
-            <!-- Contenedor para la barra de navegación y el buscador flotante -->
-            <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-2 z-50">
-                <!-- Barra de navegación inferior flotante (en forma de píldora) -->
-                <div class="flex justify-around p-2 glass-pill rounded-full shadow-lg">
-                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple focus:outline-none">
-                        <i class="fas fa-home"></i>
-                    </button>
-                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
-                        <i class="fas fa-envelope"></i>
-                    </button>
-                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-                <!-- Buscador flotante (píldora redonda) -->
-                <button id="search-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 glass-pill shadow-lg focus:outline-none">
+            <!-- Barra de navegación inferior flotante (en forma de píldora) -->
+            <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex justify-around p-2 glass-pill rounded-full shadow-lg z-50 w-full max-w-xs">
+                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple focus:outline-none">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
+                    <i class="fas fa-envelope"></i>
+                </button>
+                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <button id="search-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
                     <i class="fas fa-search"></i>
                 </button>
             </div>
@@ -312,7 +308,8 @@
         const closeModalButton = document.getElementById('close-modal-button');
         const updateModal = document.getElementById('update-modal');
         const closeUpdateModalButton = document.getElementById('close-update-modal');
-        const profileButton = document.getElementById('profile-button'); // Nuevo botón de perfil
+        const profileButton = document.getElementById('profile-button'); 
+        const searchButton = document.getElementById('search-button');
 
         // Textos para diferentes idiomas
         const translations = {
@@ -495,6 +492,13 @@
             console.log("Botón de perfil clicado. Aquí iría la navegación al perfil del usuario.");
             // Aquí se podría implementar la lógica para navegar a la pantalla de perfil
         });
+        
+        // Lógica para el botón de búsqueda
+        searchButton.addEventListener('click', () => {
+            console.log("Botón de búsqueda clicado. Aquí iría la lógica de búsqueda.");
+            // Aquí se podría implementar la lógica para la búsqueda
+        });
+
 
         // Función para manejar la persistencia de la sesión al cargar la página
         function checkSession() {
