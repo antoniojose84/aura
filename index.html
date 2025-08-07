@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class', // Habilitar el modo oscuro basado en una clase 'dark' en el HTML
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -17,10 +17,7 @@
                     colors: {
                         'liquid-bg-light': '#e0e5ec',
                         'liquid-bg-dark': '#1e2023',
-                        'liquid-surface-light': '#e0e5ec',
-                        'liquid-surface-dark': '#292c30',
-                        'liquid-border-light': 'rgba(255, 255, 255, 0.5)',
-                        'liquid-border-dark': 'rgba(0, 0, 0, 0.5)',
+                        'social-purple': '#5e43f3',
                     }
                 },
             },
@@ -39,7 +36,6 @@
             color: #f9fafb;
         }
 
-        /* Estilo para el efecto Liquid Glass / Neumorphism */
         .neumorphism-card {
             box-shadow: 6px 6px 12px #b8b8b8, -6px -6px 12px #ffffff;
         }
@@ -67,11 +63,33 @@
         .dark .neumorphism-button:active {
             box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262a2d;
         }
+
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
 
-    <!-- Contenedor principal de la aplicación -->
+    <!-- Contenedor de la aplicación que manejará las pantallas -->
     <div id="app-container" class="container mx-auto p-4 md:p-8 max-w-sm flex flex-col min-h-screen justify-center">
 
         <!-- Contenedor para los controles de idioma y modo oscuro -->
@@ -87,28 +105,162 @@
             </button>
         </div>
 
-        <!-- Tarjeta del formulario de inicio de sesión -->
-        <div class="neumorphism-card p-8 rounded-2xl w-full text-center">
-            <h1 class="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">
-                <span id="login-title">Inicia sesión</span>
+        <!-- Pantalla de inicio de sesión -->
+        <div id="login-screen" class="screen neumorphism-card p-8 rounded-2xl w-full text-center">
+            <div class="mt-8 mb-8">
+                 <!-- Círculo morado brillante sin fondo -->
+                <svg width="64" height="64" viewBox="0 0 100 100" class="block mx-auto">
+                    <defs>
+                        <radialGradient id="gradient" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color: #5e43f3; stop-opacity: 1;" />
+                            <stop offset="100%" style="stop-color: #5e43f3; stop-opacity: 0;" />
+                        </radialGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="url(#gradient)" />
+                </svg>
+            </div>
+            
+            <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+                <span data-lang-key="loginTitle">Inicia sesión</span>
             </h1>
 
             <div class="flex flex-col space-y-4 mb-6">
-                <input type="text" id="username" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Usuario">
-                <input type="password" id="password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Contraseña">
+                <input type="text" id="login-username" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Usuario">
+                <input type="password" id="login-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Contraseña">
             </div>
-
-            <!-- Botón del ícono morado, sin fondo -->
-            <button class="w-16 h-16 neumorphism-button rounded-full flex items-center justify-center mx-auto mb-6 text-white bg-social-purple">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-            </button>
             
-            <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
-                <span id="signin-button">Iniciar sesión</span>
+            <button id="login-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4">
+                <span data-lang-key="signinButton">Iniciar sesión</span>
             </button>
+            <a href="#" id="show-signup-link" class="text-blue-500 hover:underline inline-block">
+                <span data-lang-key="createAccountLink">Crear nueva cuenta</span>
+            </a>
+        </div>
+
+        <!-- Pantalla de registro -->
+        <div id="signup-screen" class="screen neumorphism-card p-8 rounded-2xl w-full text-center hidden">
+            <div class="mt-8 mb-8">
+                 <!-- Círculo morado brillante sin fondo -->
+                <svg width="64" height="64" viewBox="0 0 100 100" class="block mx-auto">
+                    <defs>
+                        <radialGradient id="gradient" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color: #5e43f3; stop-opacity: 1;" />
+                            <stop offset="100%" style="stop-color: #5e43f3; stop-opacity: 0;" />
+                        </radialGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="url(#gradient)" />
+                </svg>
+            </div>
+            
+            <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+                <span data-lang-key="createAccountTitle">Crear cuenta</span>
+            </h1>
+
+            <div class="flex flex-col space-y-4 mb-6">
+                <input type="email" id="signup-email" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Correo electrónico">
+                <input type="text" id="signup-username" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Nombre de usuario">
+                <input type="password" id="signup-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Contraseña">
+            </div>
+            
+            <button id="signup-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4">
+                <span data-lang-key="signupButton">Registrarse</span>
+            </button>
+            <a href="#" id="show-login-link" class="text-blue-500 hover:underline inline-block">
+                <span data-lang-key="backToLoginLink">Volver a iniciar sesión</span>
+            </a>
+        </div>
+
+        <!-- Pantalla principal de la red social -->
+        <div id="main-screen" class="screen hidden">
+            <!-- Header de la pantalla principal con botones de navegación -->
+            <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 bg-liquid-bg-light dark:bg-liquid-bg-dark z-50">
+                <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 focus:outline-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="flex-grow text-center">
+                    <svg width="40" height="40" viewBox="0 0 100 100" class="inline-block">
+                        <defs>
+                            <radialGradient id="gradient-header" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color: #5e43f3; stop-opacity: 1;" />
+                                <stop offset="100%" style="stop-color: #5e43f3; stop-opacity: 0;" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#gradient-header)" />
+                    </svg>
+                </div>
+                <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 focus:outline-none">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div class="pt-20"> <!-- Espacio para el header fijo -->
+                <!-- Sección para la publicación conversacional -->
+                <div class="neumorphism-card p-4 rounded-xl flex items-center mb-6">
+                    <img src="https://placehold.co/40x40/FF5733/ffffff?text=U" alt="Avatar de usuario" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
+                    <div id="new-post-trigger" class="flex-grow p-2 rounded-xl neumorphism-input text-gray-500 dark:text-gray-400 text-sm cursor-pointer">
+                        <span data-lang-key="newPostPlaceholder">¿Qué estás pensando ahora?</span>
+                    </div>
+                </div>
+
+                <!-- Los posts se cargarán aquí -->
+                <div id="posts-container">
+                    <!-- Tarjeta de post 1 -->
+                    <div class="neumorphism-card p-4 rounded-xl overflow-hidden mb-6">
+                        <div class="flex items-center p-2">
+                            <img src="https://placehold.co/40x40/FF5733/ffffff?text=J" alt="Avatar de Juan" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
+                            <div>
+                                <p class="font-semibold text-gray-900 dark:text-white">Juan</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Hace 1 hora</p>
+                            </div>
+                        </div>
+                        <p class="px-2 text-gray-700 dark:text-gray-300 mb-4">¡Hola a todos! Este es un post de prueba para la actualización.</p>
+                        <img src="https://placehold.co/600x400/5833FF/ffffff?text=Paisaje" alt="Post de Juan" class="w-full h-auto rounded-lg mb-2">
+                        <div class="flex items-center p-2 border-t border-gray-200 dark:border-gray-700">
+                            <span class="text-gray-600 dark:text-gray-400 mr-4">15 Me gusta</span>
+                            <span class="text-gray-600 dark:text-gray-400">3 comentarios</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Barra de navegación inferior -->
+        <div class="fixed bottom-0 left-0 right-0 max-w-sm mx-auto flex justify-around p-4 neumorphism-card rounded-t-3xl">
+            <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple neumorphism-button focus:outline-none">
+                <i class="fas fa-home"></i>
+            </button>
+            <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
+                <i class="fas fa-envelope"></i>
+            </button>
+            <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
+                <i class="fas fa-heart"></i>
+            </button>
+            <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
+                <i class="fas fa-user"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para el menú de publicación -->
+    <div id="new-post-modal" class="modal">
+        <div class="modal-content neumorphism-card p-6 rounded-2xl w-11/12 max-w-xs text-center">
+            <h3 class="text-xl font-bold mb-4" data-lang-key="newPostModalTitle">Crear nueva publicación</h3>
+            <div class="flex flex-col space-y-4">
+                <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                    <i class="fas fa-camera mr-2"></i> <span data-lang-key="photoButton">Subir Foto</span>
+                </button>
+                <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                    <i class="fas fa-video mr-2"></i> <span data-lang-key="videoButton">Subir Video</span>
+                </button>
+                <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                    <i class="fas fa-pen mr-2"></i> <span data-lang-key="textButton">Escribir Texto</span>
+                </button>
+                <button id="close-modal-button" class="mt-4 text-blue-500 hover:underline">
+                    <span data-lang-key="closeButton">Cancelar</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -116,42 +268,109 @@
         const body = document.body;
         const themeToggle = document.getElementById('theme-toggle');
         const languageToggle = document.getElementById('language-toggle');
-        const loginTitle = document.getElementById('login-title');
-        const signinButton = document.getElementById('signin-button');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
+        
+        // Screens
+        const loginScreen = document.getElementById('login-screen');
+        const signupScreen = document.getElementById('signup-screen');
+        const mainScreen = document.getElementById('main-screen');
+
+        // Links and Buttons
+        const showSignupLink = document.getElementById('show-signup-link');
+        const showLoginLink = document.getElementById('show-login-link');
+        const loginButton = document.getElementById('login-button');
+        const signupButton = document.getElementById('signup-button');
+        const newPostTrigger = document.getElementById('new-post-trigger');
+        const newPostModal = document.getElementById('new-post-modal');
+        const closeModalButton = document.getElementById('close-modal-button');
 
         // Textos para diferentes idiomas
         const translations = {
             'es': {
                 'loginTitle': 'Inicia sesión',
                 'signinButton': 'Iniciar sesión',
+                'createAccountLink': 'Crear nueva cuenta',
+                'createAccountTitle': 'Crear cuenta',
+                'signupButton': 'Registrarse',
+                'backToLoginLink': 'Volver a iniciar sesión',
+                'mainTitle': 'Inicio',
+                'newPostPlaceholder': '¿Qué estás pensando ahora?',
+                'newPostModalTitle': 'Crear nueva publicación',
+                'photoButton': 'Subir Foto',
+                'videoButton': 'Subir Video',
+                'textButton': 'Escribir Texto',
+                'closeButton': 'Cancelar',
                 'usernamePlaceholder': 'Usuario',
                 'passwordPlaceholder': 'Contraseña',
+                'signupEmailPlaceholder': 'Correo electrónico',
+                'signupUsernamePlaceholder': 'Nombre de usuario',
+                'signupPasswordPlaceholder': 'Contraseña',
             },
             'en': {
                 'loginTitle': 'Sign in',
                 'signinButton': 'Sign in',
+                'createAccountLink': 'Create new account',
+                'createAccountTitle': 'Create account',
+                'signupButton': 'Register',
+                'backToLoginLink': 'Back to login',
+                'mainTitle': 'Home',
+                'newPostPlaceholder': 'What are you thinking about now?',
+                'newPostModalTitle': 'Create new post',
+                'photoButton': 'Upload Photo',
+                'videoButton': 'Upload Video',
+                'textButton': 'Write Text',
+                'closeButton': 'Cancel',
                 'usernamePlaceholder': 'Username',
                 'passwordPlaceholder': 'Password',
+                'signupEmailPlaceholder': 'Email',
+                'signupUsernamePlaceholder': 'Username',
+                'signupPasswordPlaceholder': 'Password',
             },
             'fr': {
                 'loginTitle': 'Se connecter',
                 'signinButton': 'Se connecter',
+                'createAccountLink': 'Créer un nouveau compte',
+                'createAccountTitle': 'Créer un compte',
+                'signupButton': 'S\'inscrire',
+                'backToLoginLink': 'Retour à la connexion',
+                'mainTitle': 'Accueil',
+                'newPostPlaceholder': 'À quoi pensez-vous ?',
+                'newPostModalTitle': 'Créer une nouvelle publication',
+                'photoButton': 'Ajouter une photo',
+                'videoButton': 'Ajouter une vidéo',
+                'textButton': 'Écrire un texte',
+                'closeButton': 'Annuler',
                 'usernamePlaceholder': 'Nom d\'utilisateur',
                 'passwordPlaceholder': 'Mot de passe',
+                'signupEmailPlaceholder': 'E-mail',
+                'signupUsernamePlaceholder': 'Nom d\'utilisateur',
+                'signupPasswordPlaceholder': 'Mot de passe',
             }
         };
 
         let currentLang = 'es';
 
+        // Función para cambiar de pantalla
+        function showScreen(screen) {
+            const allScreens = document.querySelectorAll('.screen');
+            allScreens.forEach(s => s.classList.add('hidden'));
+            screen.classList.remove('hidden');
+        }
+
         // Función para cambiar el idioma
         function setLanguage(lang) {
             currentLang = lang;
-            loginTitle.textContent = translations[lang].loginTitle;
-            signinButton.textContent = translations[lang].signinButton;
-            usernameInput.placeholder = translations[lang].usernamePlaceholder;
-            passwordInput.placeholder = translations[lang].passwordPlaceholder;
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                if (translations[lang] && translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+            // Actualiza los placeholders
+            document.getElementById('login-username').placeholder = translations[lang].usernamePlaceholder;
+            document.getElementById('login-password').placeholder = translations[lang].passwordPlaceholder;
+            document.getElementById('signup-email').placeholder = translations[lang].signupEmailPlaceholder;
+            document.getElementById('signup-username').placeholder = translations[lang].signupUsernamePlaceholder;
+            document.getElementById('signup-password').placeholder = translations[lang].signupPasswordPlaceholder;
         }
 
         // Cargar el tema guardado en el almacenamiento local o usar la preferencia del sistema
@@ -186,8 +405,48 @@
             }
         });
 
+        // Manejadores de eventos para la navegación entre pantallas
+        showSignupLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showScreen(signupScreen);
+        });
+
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showScreen(loginScreen);
+        });
+
+        loginButton.addEventListener('click', () => {
+            // Lógica para el inicio de sesión
+            alert("Lógica de inicio de sesión no implementada. Redireccionando a la pantalla principal.");
+            showScreen(mainScreen);
+        });
+        
+        signupButton.addEventListener('click', () => {
+            // Lógica para el registro
+            alert("Lógica de registro no implementada. Redireccionando a la pantalla principal.");
+            showScreen(mainScreen);
+        });
+
+        // Manejadores para el modal de publicación
+        newPostTrigger.addEventListener('click', () => {
+            newPostModal.style.display = 'flex';
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            newPostModal.style.display = 'none';
+        });
+
+        // Cierra el modal si se hace clic fuera de él
+        window.addEventListener('click', (event) => {
+            if (event.target === newPostModal) {
+                newPostModal.style.display = 'none';
+            }
+        });
+
         // Inicializa el tema al cargar la página
         loadTheme();
     </script>
 </body>
 </html>
+
