@@ -561,6 +561,7 @@
         };
 
         let currentLang = 'es';
+        let postsListenerUnsubscribe = null;
 
         // Función para cambiar de pantalla
         function showScreen(screen) {
@@ -656,7 +657,7 @@
                 showScreen(loadingScreen);
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
-                showErrorMessage(error.message);
+                showErrorMessage('Error al iniciar sesión: ' + error.message);
                 showScreen(loginScreen);
             }
         });
@@ -677,7 +678,7 @@
                     createdAt: serverTimestamp()
                 });
             } catch (error) {
-                showErrorMessage(error.message);
+                showErrorMessage('Error al registrar usuario: ' + error.message);
                 showScreen(signupScreen);
             }
         });
@@ -685,9 +686,12 @@
         // Lógica para cerrar sesión
         logoutButton.addEventListener('click', async () => {
             try {
+                if (postsListenerUnsubscribe) {
+                    postsListenerUnsubscribe();
+                }
                 await signOut(auth);
             } catch (error) {
-                showErrorMessage(error.message);
+                showErrorMessage('Error al cerrar sesión: ' + error.message);
             }
         });
         
@@ -786,22 +790,27 @@
 
         // Listener en tiempo real para las publicaciones de Firestore
         function setupPostsListener() {
-            // Asegurarse de que el userId exista antes de intentar cargar los posts
-            if (!userId) return;
+            if (postsListenerUnsubscribe) {
+                postsListenerUnsubscribe(); // Desuscribirse del listener anterior
+            }
+            
+            postsContainer.innerHTML = `<p id="loading-posts-message" class="text-center text-gray-500 dark:text-gray-400" data-lang-key="loadingPosts">Cargando publicaciones...</p>`;
 
             const postsCollectionRef = collection(db, `artifacts/${appId}/public/data/posts`);
-            onSnapshot(postsCollectionRef, (snapshot) => {
-                postsContainer.innerHTML = '';
+            postsListenerUnsubscribe = onSnapshot(postsCollectionRef, (snapshot) => {
+                postsContainer.innerHTML = ''; // Limpiar el contenedor de posts
                 if (snapshot.empty) {
                     postsContainer.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400">${translations[currentLang].noPosts}</p>`;
                 } else {
                     const sortedPosts = [];
                     snapshot.forEach(doc => {
-                        sortedPosts.push(doc.data());
+                        const postData = doc.data();
+                        postData.id = doc.id; // Guardar el ID del documento
+                        sortedPosts.push(postData);
                     });
                     
                     // Ordenar posts por timestamp de forma descendente
-                    sortedPosts.sort((a, b) => b.timestamp - a.timestamp);
+                    sortedPosts.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                     
                     sortedPosts.forEach(post => {
                         postsContainer.appendChild(renderPost(post));
@@ -809,6 +818,8 @@
                 }
             }, (error) => {
                 showErrorMessage('Error al cargar publicaciones: ' + error.message);
+                postsContainer.innerHTML = `<p class="text-center text-red-500">Error al cargar publicaciones.</p>`;
+                postsListenerUnsubscribe = null;
             });
         }
         
@@ -831,24 +842,43 @@
         // Listener de autenticación para manejar los cambios de estado del usuario
         // Esta es la única fuente de verdad para el estado de autenticación
         onAuthStateChanged(auth, async (user) => {
+            showScreen(loadingScreen); // Siempre mostrar la pantalla de carga al principio del listener
             if (user) {
                 // Usuario autenticado
                 currentUser = user;
                 userId = user.uid;
-                username = await fetchUsername(userId);
 
-                // Actualizar la interfaz de usuario con la información del usuario
-                profileUsername.textContent = username;
-                profileUserId.textContent = userId;
-                userAvatarMain.src = `https://placehold.co/40x40/5e43f3/ffffff?text=${username[0]}`;
-                userAvatarProfile.src = `https://placehold.co/80x80/5e43f3/ffffff?text=${username[0]}`;
-                showScreen(mainScreen);
-                setupPostsListener();
+                try {
+                    // Cargar el nombre de usuario y configurar el listener de posts en paralelo
+                    const [fetchedUsername] = await Promise.all([
+                        fetchUsername(userId),
+                        setupPostsListener()
+                    ]);
+                    
+                    username = fetchedUsername;
+
+                    // Actualizar la interfaz de usuario con la información del usuario
+                    profileUsername.textContent = username;
+                    profileUserId.textContent = userId;
+                    userAvatarMain.src = `https://placehold.co/40x40/5e43f3/ffffff?text=${username[0]}`;
+                    userAvatarProfile.src = `https://placehold.co/80x80/5e43f3/ffffff?text=${username[0]}`;
+                    
+                    showScreen(mainScreen);
+
+                } catch (error) {
+                    showErrorMessage('Error al cargar datos del usuario: ' + error.message);
+                    showScreen(loginScreen);
+                    await signOut(auth); // Cierra la sesión si falla la carga de datos
+                }
+
             } else {
                 // No hay usuario autenticado, mostrar la pantalla de inicio de sesión
                 currentUser = null;
                 userId = null;
                 username = 'Usuario';
+                if (postsListenerUnsubscribe) {
+                    postsListenerUnsubscribe();
+                }
                 showScreen(loginScreen);
             }
         });
@@ -858,7 +888,7 @@
         window.onload = function() {
             loadTheme();
             setLanguage('es');
-            showScreen(loadingScreen);
+            // La pantalla de carga se mostrará automáticamente con el onAuthStateChanged
         }
     </script>
 </body>
