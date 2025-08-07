@@ -233,26 +233,125 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Barra de navegación inferior flotante (en forma de píldora) -->
-            <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex justify-around p-2 glass-pill rounded-full shadow-lg z-50 w-full max-w-xs">
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple focus:outline-none">
-                    <i class="fas fa-home"></i>
+        </div>
+
+        <!-- Pantalla de Perfil -->
+        <div id="profile-screen" class="screen hidden h-full pt-16">
+            <!-- Header de la pantalla de perfil -->
+            <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-pill z-50 rounded-b-3xl">
+                <!-- Botón de retroceso para volver a la pantalla principal -->
+                <button id="back-button" class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
+                    <i class="fas fa-arrow-left"></i>
                 </button>
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
-                    <i class="fas fa-envelope"></i>
-                </button>
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
-                    <i class="fas fa-plus"></i>
-                </button>
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
-                    <i class="fas fa-heart"></i>
-                </button>
-                <button id="search-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
-                    <i class="fas fa-search"></i>
+                <div class="flex-grow text-center">
+                    <svg width="40" height="40" viewBox="0 0 100 100" class="inline-block">
+                        <defs>
+                            <radialGradient id="gradient-profile-header" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color: #5e43f3; stop-opacity: 1;" />
+                                <stop offset="100%" style="stop-color: #5e43f3; stop-opacity: 0;" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#gradient-profile-header)" />
+                    </svg>
+                </div>
+                <!-- Botón de opciones en el perfil -->
+                <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
+                    <i class="fas fa-bars"></i>
                 </button>
             </div>
+
+            <!-- Contenido de la pantalla de perfil -->
+            <div class="neumorphism-card p-4 rounded-xl flex flex-col items-start mt-8">
+                <div class="flex justify-between items-start w-full mb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">José Antonio</h2>
+                        <p class="text-gray-500 dark:text-gray-400">joseantoniooo_1</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">0 seguidores</p>
+                    </div>
+                    <!-- Imagen de perfil grande y botón de agregar -->
+                    <div class="relative w-20 h-20 rounded-full neumorphism-button overflow-hidden">
+                        <img src="https://placehold.co/80x80/5e43f3/ffffff?text=JA" alt="Perfil del usuario" class="w-full h-full object-cover">
+                        <div class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-social-purple flex items-center justify-center text-white text-xs neumorphism-button p-1">
+                             <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción del perfil -->
+                <div class="flex w-full space-x-2 mt-4">
+                    <button class="flex-1 neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                        <span data-lang-key="editProfileButton">Editar perfil</span>
+                    </button>
+                    <button class="flex-1 neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                        <span data-lang-key="shareProfileButton">Compartir perfil</span>
+                    </button>
+                </div>
+
+                <!-- Pestañas de navegación del perfil -->
+                <div class="flex justify-between w-full mt-6">
+                    <button class="border-b-2 border-social-purple text-social-purple font-semibold p-2 focus:outline-none">
+                        <span data-lang-key="hilosTab">Hilos</span>
+                    </button>
+                    <button class="border-b-2 border-transparent text-gray-500 dark:text-gray-400 p-2 focus:outline-none">
+                        <span data-lang-key="respuestasTab">Respuestas</span>
+                    </button>
+                    <button class="border-b-2 border-transparent text-gray-500 dark:text-gray-400 p-2 focus:outline-none">
+                        <span data-lang-key="multimediaTab">Multimedia</span>
+                    </button>
+                    <button class="border-b-2 border-transparent text-gray-500 dark:text-gray-400 p-2 focus:outline-none">
+                        <span data-lang-key="repostsTab">Reposts</span>
+                    </button>
+                    <button class="border-b-2 border-transparent text-gray-500 dark:text-gray-400 p-2 focus:outline-none">
+                        <span data-lang-key="feedsTab">Feeds</span>
+                    </button>
+                </div>
+
+                <!-- Contenido de las pestañas -->
+                <div class="mt-6 w-full">
+                    <p class="text-sm font-semibold mb-2 text-gray-900 dark:text-white" data-lang-key="completeProfileTitle">Completa tu perfil</p>
+                    <div class="flex space-x-4 overflow-x-auto pb-4">
+                        <!-- Tarjeta de Crear Hilo -->
+                        <div class="neumorphism-card p-4 rounded-xl w-64 flex-shrink-0">
+                            <i class="fas fa-pen text-social-purple text-2xl mb-2"></i>
+                            <h4 class="font-bold mb-1 text-gray-900 dark:text-white" data-lang-key="createHiloTitle">Crear hilo</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4" data-lang-key="createHiloDescription">Comparte qué piensas o un momento destacado reciente.</p>
+                            <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-2 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                                <span data-lang-key="createButton">Crear</span>
+                            </button>
+                        </div>
+                        <!-- Tarjeta de Seguir Perfiles -->
+                        <div class="neumorphism-card p-4 rounded-xl w-64 flex-shrink-0">
+                            <i class="fas fa-user-plus text-social-purple text-2xl mb-2"></i>
+                            <h4 class="font-bold mb-1 text-gray-900 dark:text-white" data-lang-key="followProfilesTitle">Seguir 10 perfiles</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4" data-lang-key="followProfilesDescription">Llena tu feed de hilos que te interesen.</p>
+                            <button class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-2 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                                <span data-lang-key="viewProfilesButton">Ver perfiles</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+    </div>
+    
+    <!-- Barra de navegación inferior flotante (en forma de píldora) -->
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex justify-around p-2 glass-pill rounded-full shadow-lg z-50 w-full max-w-xs">
+        <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple focus:outline-none">
+            <i class="fas fa-home"></i>
+        </button>
+        <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
+            <i class="fas fa-envelope"></i>
+        </button>
+        <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
+            <i class="fas fa-heart"></i>
+        </button>
+        <button id="search-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
+            <i class="fas fa-search"></i>
+        </button>
     </div>
 
     <!-- Modal para el menú de publicación -->
@@ -297,6 +396,7 @@
         const loginScreen = document.getElementById('login-screen');
         const signupScreen = document.getElementById('signup-screen');
         const mainScreen = document.getElementById('main-screen');
+        const profileScreen = document.getElementById('profile-screen');
 
         // Links and Buttons
         const showSignupLink = document.getElementById('show-signup-link');
@@ -309,6 +409,7 @@
         const updateModal = document.getElementById('update-modal');
         const closeUpdateModalButton = document.getElementById('close-update-modal');
         const profileButton = document.getElementById('profile-button'); 
+        const backButton = document.getElementById('back-button'); // Nuevo botón de retroceso
         const searchButton = document.getElementById('search-button');
 
         // Textos para diferentes idiomas
@@ -332,6 +433,21 @@
                 'signupEmailPlaceholder': 'Correo electrónico',
                 'signupUsernamePlaceholder': 'Nombre de usuario',
                 'signupPasswordPlaceholder': 'Contraseña',
+                // Nuevas traducciones para la pantalla de perfil
+                'editProfileButton': 'Editar perfil',
+                'shareProfileButton': 'Compartir perfil',
+                'hilosTab': 'Hilos',
+                'respuestasTab': 'Respuestas',
+                'multimediaTab': 'Multimedia',
+                'repostsTab': 'Reposts',
+                'feedsTab': 'Feeds',
+                'completeProfileTitle': 'Completa tu perfil',
+                'createHiloTitle': 'Crear hilo',
+                'createHiloDescription': 'Comparte qué piensas o un momento destacado reciente.',
+                'createButton': 'Crear',
+                'followProfilesTitle': 'Seguir 10 perfiles',
+                'followProfilesDescription': 'Llena tu feed de hilos que te interesen.',
+                'viewProfilesButton': 'Ver perfiles',
             },
             'en': {
                 'loginTitle': 'Sign in',
@@ -352,6 +468,21 @@
                 'signupEmailPlaceholder': 'Email',
                 'signupUsernamePlaceholder': 'Username',
                 'signupPasswordPlaceholder': 'Password',
+                // Nuevas traducciones para la pantalla de perfil
+                'editProfileButton': 'Edit profile',
+                'shareProfileButton': 'Share profile',
+                'hilosTab': 'Threads',
+                'respuestasTab': 'Replies',
+                'multimediaTab': 'Media',
+                'repostsTab': 'Reposts',
+                'feedsTab': 'Feeds',
+                'completeProfileTitle': 'Complete your profile',
+                'createHiloTitle': 'Create thread',
+                'createHiloDescription': 'Share what\'s on your mind or a recent highlight.',
+                'createButton': 'Create',
+                'followProfilesTitle': 'Follow 10 profiles',
+                'followProfilesDescription': 'Fill your feed with threads you care about.',
+                'viewProfilesButton': 'View profiles',
             },
             'fr': {
                 'loginTitle': 'Se connecter',
@@ -372,6 +503,21 @@
                 'signupEmailPlaceholder': 'E-mail',
                 'signupUsernamePlaceholder': 'Nom d\'utilisateur',
                 'signupPasswordPlaceholder': 'Mot de passe',
+                // Nuevas traducciones para la pantalla de perfil
+                'editProfileButton': 'Modifier le profil',
+                'shareProfileButton': 'Partager le profil',
+                'hilosTab': 'Hilos',
+                'respuestasTab': 'Réponses',
+                'multimediaTab': 'Multimédia',
+                'repostsTab': 'Reposts',
+                'feedsTab': 'Feeds',
+                'completeProfileTitle': 'Complétez votre profil',
+                'createHiloTitle': 'Créer un fil',
+                'createHiloDescription': 'Partagez ce que vous pensez ou un moment marquant.',
+                'createButton': 'Créer',
+                'followProfilesTitle': 'Suivre 10 profils',
+                'followProfilesDescription': 'Remplissez votre fil avec des fils qui vous intéressent.',
+                'viewProfilesButton': 'Voir les profils',
             }
         };
 
@@ -487,10 +633,14 @@
             updateModal.style.display = 'none';
         });
 
-        // Lógica para el nuevo botón de perfil
+        // Lógica para el botón de perfil: Muestra la pantalla de perfil
         profileButton.addEventListener('click', () => {
-            console.log("Botón de perfil clicado. Aquí iría la navegación al perfil del usuario.");
-            // Aquí se podría implementar la lógica para navegar a la pantalla de perfil
+            showScreen(profileScreen);
+        });
+
+        // Lógica para el botón de retroceso en la pantalla de perfil
+        backButton.addEventListener('click', () => {
+            showScreen(mainScreen);
         });
         
         // Lógica para el botón de búsqueda
