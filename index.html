@@ -384,13 +384,12 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCustomToken, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection, query, serverTimestamp, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variables globales proporcionadas por el entorno de Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(__firebase_config);
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
@@ -401,7 +400,6 @@
         let currentUser = null;
         let username = 'Usuario'; // Nombre de usuario predeterminado
         let userId = null;
-        let isAuthReady = false;
 
         // Elementos del DOM
         const body = document.body;
@@ -657,10 +655,9 @@
             try {
                 showScreen(loadingScreen);
                 await signInWithEmailAndPassword(auth, email, password);
-                // El onAuthStateChanged se encargará de la navegación
             } catch (error) {
                 showErrorMessage(error.message);
-                showScreen(loginScreen); // Volver a la pantalla de login si falla
+                showScreen(loginScreen);
             }
         });
         
@@ -679,10 +676,9 @@
                     username: newUsername,
                     createdAt: serverTimestamp()
                 });
-                // El onAuthStateChanged se encargará de la navegación
             } catch (error) {
                 showErrorMessage(error.message);
-                showScreen(signupScreen); // Volver a la pantalla de registro si falla
+                showScreen(signupScreen);
             }
         });
 
@@ -690,7 +686,6 @@
         logoutButton.addEventListener('click', async () => {
             try {
                 await signOut(auth);
-                // El onAuthStateChanged se encargará de la navegación
             } catch (error) {
                 showErrorMessage(error.message);
             }
@@ -791,7 +786,8 @@
 
         // Listener en tiempo real para las publicaciones de Firestore
         function setupPostsListener() {
-            if (!isAuthReady) return;
+            // Asegurarse de que el userId exista antes de intentar cargar los posts
+            if (!userId) return;
 
             const postsCollectionRef = collection(db, `artifacts/${appId}/public/data/posts`);
             onSnapshot(postsCollectionRef, (snapshot) => {
@@ -833,9 +829,10 @@
         }
 
         // Listener de autenticación para manejar los cambios de estado del usuario
+        // Esta es la única fuente de verdad para el estado de autenticación
         onAuthStateChanged(auth, async (user) => {
-            isAuthReady = true;
             if (user) {
+                // Usuario autenticado
                 currentUser = user;
                 userId = user.uid;
                 username = await fetchUsername(userId);
@@ -848,6 +845,7 @@
                 showScreen(mainScreen);
                 setupPostsListener();
             } else {
+                // No hay usuario autenticado, mostrar la pantalla de inicio de sesión
                 currentUser = null;
                 userId = null;
                 username = 'Usuario';
@@ -855,28 +853,12 @@
             }
         });
         
-        // Función para autenticar con el token inicial si existe
-        async function authenticateWithToken() {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Error during initial authentication:", error);
-                // Si la autenticación falla, mostramos directamente la pantalla de login
-                showScreen(loginScreen);
-            }
-        }
-
-        // Cargar el tema y autenticar al iniciar la aplicación
+        // Cargar el tema y el idioma al iniciar la aplicación, y mostrar la pantalla de carga
+        // El onAuthStateChanged se encargará del resto de la lógica de navegación
         window.onload = function() {
             loadTheme();
             setLanguage('es');
-            // Muestra la pantalla de carga antes de intentar autenticar
             showScreen(loadingScreen);
-            authenticateWithToken();
         }
     </script>
 </body>
