@@ -231,8 +231,8 @@
                     </div>
                 </div>
             </div>
-             <!-- Barra de navegación inferior (con efecto de vidrio) -->
-            <div class="fixed bottom-0 left-0 right-0 max-w-sm mx-auto flex justify-around p-4 glass-navbar rounded-t-3xl z-50">
+             <!-- Barra de navegación inferior flotante (con efecto de vidrio) -->
+            <div class="fixed bottom-4 left-1/2 -translate-x-1/2 max-w-sm w-[90%] flex justify-around p-4 glass-navbar rounded-full z-50">
                 <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple neumorphism-button focus:outline-none">
                     <i class="fas fa-home"></i>
                 </button>
@@ -251,6 +251,12 @@
             </div>
         </div>
     </div>
+
+    <!-- Buscador flotante -->
+    <button id="search-button" class="fixed bottom-4 right-4 w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button z-50 focus:outline-none">
+        <i class="fas fa-search"></i>
+    </button>
+
 
     <!-- Modal para el menú de publicación -->
     <div id="new-post-modal" class="modal">
@@ -272,6 +278,18 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal de notificación de actualización -->
+    <div id="update-modal" class="modal">
+        <div class="modal-content neumorphism-card p-6 rounded-2xl w-11/12 max-w-xs text-center">
+            <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">¡Actualizamos!</h3>
+            <p class="mb-6 text-gray-700 dark:text-gray-300">Hemos hecho algunas mejoras y correcciones.</p>
+            <button id="close-update-modal" class="neumorphism-button font-semibold p-3 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                Aceptar
+            </button>
+        </div>
+    </div>
+
 
     <script>
         const body = document.body;
@@ -292,6 +310,8 @@
         const newPostTrigger = document.getElementById('new-post-trigger');
         const newPostModal = document.getElementById('new-post-modal');
         const closeModalButton = document.getElementById('close-modal-button');
+        const updateModal = document.getElementById('update-modal');
+        const closeUpdateModalButton = document.getElementById('close-update-modal');
 
         // Textos para diferentes idiomas
         const translations = {
@@ -465,6 +485,11 @@
                 newPostModal.style.display = 'none';
             }
         });
+        
+        // Lógica para el modal de actualización
+        closeUpdateModalButton.addEventListener('click', () => {
+            updateModal.style.display = 'none';
+        });
 
         // Función para manejar la persistencia de la sesión al cargar la página
         function checkSession() {
@@ -475,9 +500,12 @@
             }
         }
         
-        // Cargar el tema y revisar la sesión al iniciar la aplicación
-        loadTheme();
-        checkSession();
+        // Cargar el tema, mostrar el mensaje de actualización y revisar la sesión al iniciar la aplicación
+        window.onload = function() {
+            loadTheme();
+            checkSession();
+            updateModal.style.display = 'flex'; // Mostrar el modal de actualización
+        }
     </script>
 </body>
 </html>
