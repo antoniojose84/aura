@@ -64,7 +64,7 @@
             box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262a2d;
         }
 
-        /* Estilos para el efecto de "vidrio esmerilado" en las barras de navegación */
+        /* Estilos para el efecto de "vidrio esmerilado" en las píldoras flotantes */
         .glass-pill {
             backdrop-filter: blur(20px);
             background-color: rgba(224, 229, 236, 0.7); /* Fondo semi-transparente claro */
@@ -184,6 +184,7 @@
         <div id="main-screen" class="screen hidden">
             <!-- Header de la pantalla principal con botones de navegación (con efecto de vidrio) -->
             <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-pill z-50 rounded-b-3xl">
+                <!-- Botón de menú/opciones -->
                 <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
                     <i class="fas fa-bars"></i>
                 </button>
@@ -198,8 +199,9 @@
                         <circle cx="50" cy="50" r="45" fill="url(#gradient-header)" />
                     </svg>
                 </div>
-                <button id="logout-button" class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-sign-out-alt"></i>
+                <!-- Botón de perfil flotante en la parte superior derecha -->
+                <button id="profile-button" class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
+                    <i class="fas fa-user"></i>
                 </button>
             </div>
             <div class="pt-20"> <!-- Espacio para el header fijo -->
@@ -231,8 +233,9 @@
                     </div>
                 </div>
             </div>
-             <!-- Contenedor para la barra de navegación y el buscador flotante -->
-            <div class="fixed bottom-4 left-1/2 -translate-x-1/2 max-w-sm flex justify-center space-x-2 z-50">
+            
+            <!-- Contenedor para la barra de navegación y el buscador flotante -->
+            <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-2 z-50">
                 <!-- Barra de navegación inferior flotante (en forma de píldora) -->
                 <div class="flex justify-around p-2 glass-pill rounded-full shadow-lg">
                     <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple focus:outline-none">
@@ -244,20 +247,15 @@
                     <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
                         <i class="fas fa-heart"></i>
                     </button>
-                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
-                        <i class="fas fa-user"></i>
+                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
+                        <i class="fas fa-plus"></i>
                     </button>
                 </div>
-                 <!-- Botón para crear nuevo post (píldora central flotante) -->
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
-                     <i class="fas fa-plus"></i>
-                </button>
-                 <!-- Buscador flotante (píldora redonda) -->
+                <!-- Buscador flotante (píldora redonda) -->
                 <button id="search-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 glass-pill shadow-lg focus:outline-none">
                     <i class="fas fa-search"></i>
                 </button>
             </div>
-
         </div>
     </div>
 
@@ -309,12 +307,12 @@
         const showLoginLink = document.getElementById('show-login-link');
         const loginButton = document.getElementById('login-button');
         const signupButton = document.getElementById('signup-button');
-        const logoutButton = document.getElementById('logout-button');
         const newPostTrigger = document.getElementById('new-post-trigger');
         const newPostModal = document.getElementById('new-post-modal');
         const closeModalButton = document.getElementById('close-modal-button');
         const updateModal = document.getElementById('update-modal');
         const closeUpdateModalButton = document.getElementById('close-update-modal');
+        const profileButton = document.getElementById('profile-button'); // Nuevo botón de perfil
 
         // Textos para diferentes idiomas
         const translations = {
@@ -466,15 +464,13 @@
             showScreen(mainScreen);
         });
         
-        // Lógica de cerrar sesión
-        logoutButton.addEventListener('click', () => {
-            console.log("Cerrando sesión.");
-            localStorage.removeItem('isLoggedIn');
-            showScreen(loginScreen);
-        });
-
         // Manejadores para el modal de publicación
         newPostTrigger.addEventListener('click', () => {
+            newPostModal.style.display = 'flex';
+        });
+        
+        // El botón de + también abre el modal de publicación
+        document.querySelector('.fa-plus').closest('button').addEventListener('click', () => {
             newPostModal.style.display = 'flex';
         });
 
@@ -492,6 +488,12 @@
         // Lógica para el modal de actualización
         closeUpdateModalButton.addEventListener('click', () => {
             updateModal.style.display = 'none';
+        });
+
+        // Lógica para el nuevo botón de perfil
+        profileButton.addEventListener('click', () => {
+            console.log("Botón de perfil clicado. Aquí iría la navegación al perfil del usuario.");
+            // Aquí se podría implementar la lógica para navegar a la pantalla de perfil
         });
 
         // Función para manejar la persistencia de la sesión al cargar la página
