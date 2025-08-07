@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Red Social</title>
-    <!-- Etiquetas meta para prevenir el caché del navegador, forzando la carga de la última versión -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <!-- Tailwind CSS para un estilo moderno y responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -68,6 +64,17 @@
             box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262a2d;
         }
 
+        /* Estilos para el efecto de "vidrio esmerilado" en las barras de navegación */
+        .glass-navbar {
+            backdrop-filter: blur(20px);
+            background-color: rgba(224, 229, 236, 0.7); /* Fondo semi-transparente claro */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .dark .glass-navbar {
+            background-color: rgba(30, 32, 35, 0.7); /* Fondo semi-transparente oscuro */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
         /* Estilos para el modal */
         .modal {
             display: none;
@@ -92,19 +99,11 @@
     </style>
 </head>
 <body class="font-sans antialiased">
-    <!-- Script para forzar la actualización de la página y evitar el caché del navegador -->
-    <script>
-        // Si no hay un parámetro de versión en la URL, se recarga la página
-        // para asegurar que siempre se obtenga la última versión.
-        if (location.href.indexOf('?v=') === -1) {
-            location.href = location.href + '?v=' + new Date().getTime();
-        }
-    </script>
     <!-- Contenedor de la aplicación que manejará las pantallas -->
     <div id="app-container" class="container mx-auto p-4 md:p-8 max-w-sm flex flex-col min-h-screen justify-center">
 
         <!-- Contenedor para los controles de idioma y modo oscuro -->
-        <div class="fixed top-4 right-4 flex space-x-2">
+        <div class="fixed top-4 right-4 flex space-x-2 z-50">
             <!-- Botón para cambiar el idioma -->
             <button id="language-toggle" class="neumorphism-button w-12 h-12 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 focus:outline-none">
                 <i class="fas fa-globe"></i>
@@ -183,9 +182,9 @@
 
         <!-- Pantalla principal de la red social -->
         <div id="main-screen" class="screen hidden">
-            <!-- Header de la pantalla principal con botones de navegación -->
-            <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 bg-liquid-bg-light dark:bg-liquid-bg-dark z-50">
-                <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 focus:outline-none">
+            <!-- Header de la pantalla principal con botones de navegación (con efecto de vidrio) -->
+            <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-navbar z-50">
+                <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="flex-grow text-center">
@@ -232,8 +231,8 @@
                     </div>
                 </div>
             </div>
-             <!-- Barra de navegación inferior -->
-            <div class="fixed bottom-0 left-0 right-0 max-w-sm mx-auto flex justify-around p-4 neumorphism-card rounded-t-3xl">
+             <!-- Barra de navegación inferior (con efecto de vidrio) -->
+            <div class="fixed bottom-0 left-0 right-0 max-w-sm mx-auto flex justify-around p-4 glass-navbar rounded-t-3xl z-50">
                 <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple neumorphism-button focus:outline-none">
                     <i class="fas fa-home"></i>
                 </button>
@@ -289,7 +288,7 @@
         const showLoginLink = document.getElementById('show-login-link');
         const loginButton = document.getElementById('login-button');
         const signupButton = document.getElementById('signup-button');
-        const logoutButton = document.getElementById('logout-button'); // Nuevo botón de cerrar sesión
+        const logoutButton = document.getElementById('logout-button');
         const newPostTrigger = document.getElementById('new-post-trigger');
         const newPostModal = document.getElementById('new-post-modal');
         const closeModalButton = document.getElementById('close-modal-button');
@@ -444,7 +443,7 @@
             showScreen(mainScreen);
         });
         
-        // Lógica de cerrar sesión (nuevo)
+        // Lógica de cerrar sesión
         logoutButton.addEventListener('click', () => {
             console.log("Cerrando sesión.");
             localStorage.removeItem('isLoggedIn');
