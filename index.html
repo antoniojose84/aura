@@ -51,13 +51,14 @@
             box-shadow: inset 6px 6px 12px #b8b8b8, inset -6px -6px 12px #ffffff;
         }
         .dark .neumorphism-input {
-            box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262a2d;
+            box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262d31;
         }
 
         .neumorphism-button {
             box-shadow: 6px 6px 12px #b8b8b8, -6px -6px 12px #ffffff;
         }
         .dark .neumorphism-button {
+            background-color: #2a2d30;
             box-shadow: 6px 6px 12px #17181a, -6px -6px 12px #262d31;
         }
 
@@ -65,7 +66,7 @@
             box-shadow: inset 6px 6px 12px #b8b8b8, inset -6px -6px 12px #ffffff;
         }
         .dark .neumorphism-button:active {
-            box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262a2d;
+            box-shadow: inset 6px 6px 12px #17181a, inset -6px -6px 12px #262d31;
         }
 
         /* Estilos para el efecto de "vidrio esmerilado" en las p\u00edldoras flotantes */
@@ -490,7 +491,8 @@
                 'loadingPosts': 'Cargando publicaciones...',
                 'noPosts': 'A\u00fan no hay publicaciones. ¡S\u00e9 el primero en publicar!',
                 'postPublished': '¡Publicaci\u00f3n enviada!',
-                'loadingMessage': 'Cargando...'
+                'loadingMessage': 'Cargando...',
+                'firebaseNotAvailable': 'Los servicios de Firebase no est\u00e1n disponibles.'
             },
             'en': {
                 'loginTitle': 'Sign in',
@@ -528,7 +530,8 @@
                 'loadingPosts': 'Loading posts...',
                 'noPosts': 'No posts yet. Be the first to post!',
                 'postPublished': 'Post sent!',
-                'loadingMessage': 'Loading...'
+                'loadingMessage': 'Loading...',
+                'firebaseNotAvailable': 'Firebase services are not available.'
             },
             'fr': {
                 'loginTitle': 'Se connecter',
@@ -566,7 +569,8 @@
                 'loadingPosts': 'Chargement des publications...',
                 'noPosts': 'Aucune publication pour le moment. Soyez le premier \u00e0 publier !',
                 'postPublished': 'Publication envoy\u00e9e !',
-                'loadingMessage': 'Chargement...'
+                'loadingMessage': 'Chargement...',
+                'firebaseNotAvailable': 'Les services Firebase ne sont pas disponibles.'
             }
         };
 
@@ -663,8 +667,8 @@
             const email = loginEmailInput.value;
             const password = loginPasswordInput.value;
 
-            if (!auth) {
-                showErrorMessage("El servicio de autenticaci\u00f3n no est\u00e1 disponible.");
+            if (!auth || !db) {
+                showErrorMessage(translations[currentLang].firebaseNotAvailable);
                 return;
             }
 
@@ -684,9 +688,9 @@
             const email = signupEmailInput.value;
             const password = signupPasswordInput.value;
             const newUsername = signupUsernameInput.value;
-
+            
             if (!auth || !db) {
-                showErrorMessage("Los servicios de Firebase no est\u00e1n disponibles.");
+                showErrorMessage(translations[currentLang].firebaseNotAvailable);
                 return;
             }
 
@@ -768,7 +772,7 @@
             }
 
             if (!db) {
-                 showErrorMessage("El servicio de base de datos no est\u00e1 disponible.");
+                 showErrorMessage(translations[currentLang].firebaseNotAvailable);
                  return;
             }
 
