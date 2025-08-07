@@ -155,7 +155,7 @@
                 <input type="password" id="login-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Contrase\u00f1a">
             </div>
             
-            <button id="login-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4">
+            <button id="login-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4" disabled>
                 <span data-lang-key="signinButton">Iniciar sesi\u00f3n</span>
             </button>
             <a href="#" id="show-signup-link" class="text-blue-500 hover:underline inline-block">
@@ -188,7 +188,7 @@
                 <input type="password" id="signup-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Contrase\u00f1a">
             </div>
             
-            <button id="signup-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4">
+            <button id="signup-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4" disabled>
                 <span data-lang-key="signupButton">Registrarse</span>
             </button>
             <a href="#" id="show-login-link" class="text-blue-500 hover:underline inline-block">
@@ -361,7 +361,7 @@
             <h3 class="text-xl font-bold mb-4" data-lang-key="newPostModalTitle">Crear nueva publicaci\u00f3n</h3>
             <textarea id="post-text" class="neumorphism-input p-4 rounded-xl w-full h-32 focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 mb-4" placeholder="Escribe tu publicaci\u00f3n aqu\u00ed..."></textarea>
             <div class="flex flex-col space-y-4">
-                <button id="publish-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+                <button id="publish-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300" disabled>
                     <span data-lang-key="publishButton">Publicar</span>
                 </button>
                 <button id="close-modal-button" class="mt-4 text-blue-500 hover:underline">
@@ -396,6 +396,7 @@
         let app = null;
         let auth = null;
         let db = null;
+        let isAuthReady = false; // Nueva variable para rastrear la preparaci\u00f3n de la autenticaci\u00f3n
 
         if (firebaseConfig) {
             app = initializeApp(firebaseConfig);
@@ -430,7 +431,7 @@
         const loginButton = document.getElementById('login-button');
         const signupEmailInput = document.getElementById('signup-email');
         const signupUsernameInput = document.getElementById('signup-username');
-        const signupPasswordInput = document.getElementById('signup-password');
+        const signupPasswordInput = document = document.getElementById('signup-password');
         const signupButton = document.getElementById('signup-button');
         const logoutButton = document.getElementById('logout-button');
         const newPostTrigger = document.getElementById('new-post-trigger');
@@ -570,7 +571,7 @@
                 'noPosts': 'Aucune publication pour le moment. Soyez le premier \u00e0 publier !',
                 'postPublished': 'Publication envoy\u00e9e !',
                 'loadingMessage': 'Chargement...',
-                'firebaseNotAvailable': 'Les services Firebase ne sont pas disponibles.'
+                'firebaseNotAvailable': 'Los servicios Firebase no est\u00e1n disponibles.'
             }
         };
 
@@ -667,7 +668,8 @@
             const email = loginEmailInput.value;
             const password = loginPasswordInput.value;
 
-            if (!auth || !db) {
+            // Verificaci\u00f3n de seguridad, aunque los botones est\u00e9n deshabilitados
+            if (!isAuthReady || !auth || !db) {
                 showErrorMessage(translations[currentLang].firebaseNotAvailable);
                 return;
             }
@@ -689,7 +691,8 @@
             const password = signupPasswordInput.value;
             const newUsername = signupUsernameInput.value;
             
-            if (!auth || !db) {
+            // Verificaci\u00f3n de seguridad, aunque los botones est\u00e9n deshabilitados
+            if (!isAuthReady || !auth || !db) {
                 showErrorMessage(translations[currentLang].firebaseNotAvailable);
                 return;
             }
@@ -770,8 +773,7 @@
                 showErrorMessage('El contenido del post no puede estar vac\u00edo.');
                 return;
             }
-
-            if (!db) {
+            if (!isAuthReady || !db) {
                  showErrorMessage(translations[currentLang].firebaseNotAvailable);
                  return;
             }
@@ -890,6 +892,14 @@
             onAuthStateChanged(auth, async (user) => {
                 console.log('[Auth] Evento onAuthStateChanged disparado. Usuario:', user ? user.uid : 'null');
                 
+                // Habilitar los botones una vez que se complete la verificaci\u00f3n de autenticaci\u00f3n
+                if (!isAuthReady) {
+                    loginButton.disabled = false;
+                    signupButton.disabled = false;
+                    publishButton.disabled = false;
+                    isAuthReady = true;
+                }
+
                 if (user) {
                     // Usuario autenticado
                     currentUser = user;
@@ -930,7 +940,6 @@
         }
         
         // Cargar el tema y el idioma al iniciar la aplicaci\u00f3n, y mostrar la pantalla de carga
-        // El onAuthStateChanged se encargar\u00e1 del resto de la l\u00f3gica de navegaci\u00f3n
         window.onload = function() {
             console.log('[App] Aplicaci\u00f3n iniciada. Configurando UI y esperando autenticaci\u00f3n...');
             loadTheme();
@@ -940,7 +949,12 @@
             // Si auth no est\u00e1 disponible, salta directamente a la pantalla de login
             if (!auth) {
                 console.log('[App] Firebase Auth no est\u00e1 disponible. Saltando a la pantalla de login.');
-                setTimeout(() => showScreen(loginScreen), 500); // Peque\u00f1o retraso para el efecto de carga
+                setTimeout(() => {
+                    showScreen(loginScreen);
+                    isAuthReady = true;
+                    loginButton.disabled = false;
+                    signupButton.disabled = false;
+                }, 500); // Peque\u00f1o retraso para el efecto de carga
                 return;
             }
 
@@ -965,6 +979,10 @@
                     })
                     .catch((error) => {
                         console.error("[Auth] Error al iniciar sesi\u00f3n an\u00f3nima:", error);
+                        // En caso de error, muestra el login
+                        isAuthReady = true;
+                        loginButton.disabled = false;
+                        signupButton.disabled = false;
                         showScreen(loginScreen);
                     });
             } else {
