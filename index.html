@@ -17,6 +17,8 @@
                     colors: {
                         'liquid-bg-light': '#e0e5ec',
                         'liquid-bg-dark': '#1e2023',
+                        'card-light': '#e0e5ec',
+                        'card-dark': '#2a2d30',
                         'social-purple': '#5e43f3',
                     }
                 },
@@ -37,9 +39,11 @@
         }
 
         .neumorphism-card {
+            background-color: #e0e5ec; /* Fondo de la tarjeta por defecto */
             box-shadow: 6px 6px 12px #b8b8b8, -6px -6px 12px #ffffff;
         }
         .dark .neumorphism-card {
+            background-color: #2a2d30; /* Fondo de la tarjeta en modo oscuro */
             box-shadow: 6px 6px 12px #17181a, -6px -6px 12px #262a2d;
         }
 
@@ -99,8 +103,8 @@
     </style>
 </head>
 <body class="font-sans antialiased">
-    <!-- Contenedor de la aplicación que manejará las pantallas -->
-    <div id="app-container" class="container mx-auto p-4 md:p-8 max-w-sm flex flex-col min-h-screen justify-center">
+    <!-- Contenedor principal de la aplicación -->
+    <div id="app-container" class="container mx-auto p-4 md:p-8 max-w-sm flex flex-col min-h-screen">
 
         <!-- Contenedor para los controles de idioma y modo oscuro -->
         <div class="fixed top-4 right-4 flex space-x-2 z-50">
@@ -113,6 +117,17 @@
                 <i class="fas fa-moon dark:hidden"></i>
                 <i class="fas fa-sun hidden dark:block"></i>
             </button>
+        </div>
+
+        <!-- Pantalla de carga (visible por defecto) -->
+        <div id="loading-screen" class="screen flex flex-grow justify-center items-center">
+            <div class="flex flex-col items-center">
+                <svg class="animate-spin h-10 w-10 text-social-purple" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-gray-500 dark:text-gray-400" data-lang-key="loadingMessage">Cargando...</p>
+            </div>
         </div>
 
         <!-- Pantalla de inicio de sesión -->
@@ -135,8 +150,8 @@
             </h1>
 
             <div class="flex flex-col space-y-4 mb-6">
-                <input type="email" id="login-email" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Correo electrónico">
-                <input type="password" id="login-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Contraseña">
+                <input type="email" id="login-email" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Correo electrónico">
+                <input type="password" id="login-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Contraseña">
             </div>
             
             <button id="login-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4">
@@ -167,9 +182,9 @@
             </h1>
 
             <div class="flex flex-col space-y-4 mb-6">
-                <input type="email" id="signup-email" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Correo electrónico">
-                <input type="text" id="signup-username" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Nombre de usuario">
-                <input type="password" id="signup-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent" placeholder="Contraseña">
+                <input type="email" id="signup-email" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Correo electrónico">
+                <input type="text" id="signup-username" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Nombre de usuario">
+                <input type="password" id="signup-password" class="neumorphism-input p-4 rounded-xl w-full focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" placeholder="Contraseña">
             </div>
             
             <button id="signup-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 mb-4">
@@ -181,7 +196,7 @@
         </div>
 
         <!-- Pantalla principal de la red social -->
-        <div id="main-screen" class="screen hidden">
+        <div id="main-screen" class="screen hidden flex-grow">
             <!-- Header de la pantalla principal con botones de navegación (con efecto de vidrio) -->
             <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-pill z-50 rounded-b-3xl">
                 <!-- Botón de menú/opciones -->
@@ -216,13 +231,13 @@
                 <!-- Los posts se cargarán aquí -->
                 <div id="posts-container">
                     <!-- Mensaje de carga inicial -->
-                    <p id="loading-message" class="text-center text-gray-500 dark:text-gray-400">Cargando publicaciones...</p>
+                    <p id="loading-posts-message" class="text-center text-gray-500 dark:text-gray-400" data-lang-key="loadingPosts">Cargando publicaciones...</p>
                 </div>
             </div>
         </div>
 
         <!-- Pantalla de Perfil -->
-        <div id="profile-screen" class="screen hidden h-full pt-16">
+        <div id="profile-screen" class="screen hidden h-full flex-grow pt-16">
             <!-- Header de la pantalla de perfil -->
             <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-pill z-50 rounded-b-3xl">
                 <!-- Botón de retroceso para volver a la pantalla principal -->
@@ -343,7 +358,7 @@
     <div id="new-post-modal" class="modal">
         <div class="modal-content neumorphism-card p-6 rounded-2xl w-11/12 max-w-xs text-center">
             <h3 class="text-xl font-bold mb-4" data-lang-key="newPostModalTitle">Crear nueva publicación</h3>
-            <textarea id="post-text" class="neumorphism-input p-4 rounded-xl w-full h-32 focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-transparent mb-4" placeholder="Escribe tu publicación aquí..."></textarea>
+            <textarea id="post-text" class="neumorphism-input p-4 rounded-xl w-full h-32 focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 mb-4" placeholder="Escribe tu publicación aquí..."></textarea>
             <div class="flex flex-col space-y-4">
                 <button id="publish-button" class="neumorphism-button text-gray-900 dark:text-gray-100 font-semibold p-4 rounded-xl w-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
                     <span data-lang-key="publishButton">Publicar</span>
@@ -370,7 +385,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCustomToken, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, query, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query, serverTimestamp, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variables globales proporcionadas por el entorno de Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -391,6 +406,8 @@
         const body = document.body;
         const themeToggle = document.getElementById('theme-toggle');
         const languageToggle = document.getElementById('language-toggle');
+        const appContainer = document.getElementById('app-container');
+        const loadingScreen = document.getElementById('loading-screen');
         const loginScreen = document.getElementById('login-screen');
         const signupScreen = document.getElementById('signup-screen');
         const mainScreen = document.getElementById('main-screen');
@@ -423,7 +440,7 @@
         const userAvatarMain = document.getElementById('user-avatar-main');
         const userAvatarProfile = document.getElementById('user-avatar-profile');
         const createPostButton = document.getElementById('create-post-button');
-        const loadingMessage = document.getElementById('loading-message');
+        const loadingPostsMessage = document.getElementById('loading-posts-message');
 
 
         // Textos para diferentes idiomas
@@ -464,6 +481,7 @@
                 'loadingPosts': 'Cargando publicaciones...',
                 'noPosts': 'Aún no hay publicaciones. ¡Sé el primero en publicar!',
                 'postPublished': '¡Publicación enviada!',
+                'loadingMessage': 'Cargando...'
             },
             'en': {
                 'loginTitle': 'Sign in',
@@ -501,6 +519,7 @@
                 'loadingPosts': 'Loading posts...',
                 'noPosts': 'No posts yet. Be the first to post!',
                 'postPublished': 'Post sent!',
+                'loadingMessage': 'Loading...'
             },
             'fr': {
                 'loginTitle': 'Se connecter',
@@ -538,6 +557,7 @@
                 'loadingPosts': 'Chargement des publications...',
                 'noPosts': 'Aucune publication pour le moment. Soyez le premier à publier !',
                 'postPublished': 'Publication envoyée !',
+                'loadingMessage': 'Chargement...'
             }
         };
 
@@ -546,12 +566,18 @@
         // Función para cambiar de pantalla
         function showScreen(screen) {
             const allScreens = document.querySelectorAll('.screen');
-            allScreens.forEach(s => s.classList.add('hidden'));
+            allScreens.forEach(s => {
+                s.classList.add('hidden');
+            });
             screen.classList.remove('hidden');
-            
+
             if (screen.id === 'main-screen' || screen.id === 'profile-screen') {
+                appContainer.classList.add('justify-start');
+                appContainer.classList.remove('justify-center');
                 bottomNavbar.classList.remove('hidden');
             } else {
+                appContainer.classList.remove('justify-start');
+                appContainer.classList.add('justify-center');
                 bottomNavbar.classList.add('hidden');
             }
         }
@@ -628,10 +654,12 @@
             const password = loginPasswordInput.value;
 
             try {
+                showScreen(loadingScreen);
                 await signInWithEmailAndPassword(auth, email, password);
                 // El onAuthStateChanged se encargará de la navegación
             } catch (error) {
                 showErrorMessage(error.message);
+                showScreen(loginScreen); // Volver a la pantalla de login si falla
             }
         });
         
@@ -642,6 +670,7 @@
             const newUsername = signupUsernameInput.value;
 
             try {
+                showScreen(loadingScreen);
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 const userDocRef = doc(db, `artifacts/${appId}/users/${user.uid}/profiles`, user.uid);
@@ -652,6 +681,7 @@
                 // El onAuthStateChanged se encargará de la navegación
             } catch (error) {
                 showErrorMessage(error.message);
+                showScreen(signupScreen); // Volver a la pantalla de registro si falla
             }
         });
 
@@ -744,7 +774,7 @@
             
             postElement.innerHTML = `
                 <div class="flex items-center p-2">
-                    <img src="https://placehold.co/40x40/FF5733/ffffff?text=${post.authorUsername[0]}" alt="Avatar de ${post.authorUsername}" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
+                    <img src="https://placehold.co/40x40/5e43f3/ffffff?text=${post.authorUsername[0]}" alt="Avatar de ${post.authorUsername}" class="w-10 h-10 rounded-full mr-3 border-2 border-social-purple">
                     <div>
                         <p class="font-semibold text-gray-900 dark:text-white">${post.authorUsername}</p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">${timestamp}</p>
@@ -811,7 +841,6 @@
                 profileUserId.textContent = userId;
                 userAvatarMain.src = `https://placehold.co/40x40/5e43f3/ffffff?text=${username[0]}`;
                 userAvatarProfile.src = `https://placehold.co/80x80/5e43f3/ffffff?text=${username[0]}`;
-
                 showScreen(mainScreen);
                 setupPostsListener();
             } else {
@@ -842,8 +871,11 @@
         window.onload = function() {
             loadTheme();
             setLanguage('es');
+            // Muestra la pantalla de carga antes de intentar autenticar
+            showScreen(loadingScreen);
             authenticateWithToken();
         }
     </script>
 </body>
 </html>
+
