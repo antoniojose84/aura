@@ -199,8 +199,8 @@
                         <circle cx="50" cy="50" r="45" fill="url(#gradient-header)" />
                     </svg>
                 </div>
-                <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 focus:outline-none">
-                    <i class="fas fa-search"></i>
+                <button id="logout-button" class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
+                    <i class="fas fa-sign-out-alt"></i>
                 </button>
             </div>
             <div class="pt-20"> <!-- Espacio para el header fijo -->
@@ -289,6 +289,7 @@
         const showLoginLink = document.getElementById('show-login-link');
         const loginButton = document.getElementById('login-button');
         const signupButton = document.getElementById('signup-button');
+        const logoutButton = document.getElementById('logout-button'); // Nuevo botón de cerrar sesión
         const newPostTrigger = document.getElementById('new-post-trigger');
         const newPostModal = document.getElementById('new-post-modal');
         const closeModalButton = document.getElementById('close-modal-button');
@@ -426,16 +427,28 @@
             showScreen(loginScreen);
         });
 
+        // Lógica de inicio de sesión
         loginButton.addEventListener('click', () => {
-            // Lógica para el inicio de sesión
-            alert("Lógica de inicio de sesión no implementada. Redireccionando a la pantalla principal.");
+            // En una aplicación real, aquí validarías las credenciales
+            // y, si son correctas, guardarías el estado.
+            console.log("Lógica de inicio de sesión no implementada. Simulando inicio de sesión exitoso.");
+            localStorage.setItem('isLoggedIn', 'true');
             showScreen(mainScreen);
         });
         
+        // Lógica de registro
         signupButton.addEventListener('click', () => {
-            // Lógica para el registro
-            alert("Lógica de registro no implementada. Redireccionando a la pantalla principal.");
+            // En una aplicación real, aquí crearías un nuevo usuario.
+            console.log("Lógica de registro no implementada. Simulando registro exitoso.");
+            localStorage.setItem('isLoggedIn', 'true');
             showScreen(mainScreen);
+        });
+        
+        // Lógica de cerrar sesión (nuevo)
+        logoutButton.addEventListener('click', () => {
+            console.log("Cerrando sesión.");
+            localStorage.removeItem('isLoggedIn');
+            showScreen(loginScreen);
         });
 
         // Manejadores para el modal de publicación
@@ -454,8 +467,18 @@
             }
         });
 
-        // Inicializa el tema al cargar la página
+        // Función para manejar la persistencia de la sesión al cargar la página
+        function checkSession() {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                showScreen(mainScreen);
+            } else {
+                showScreen(loginScreen);
+            }
+        }
+        
+        // Cargar el tema y revisar la sesión al iniciar la aplicación
         loadTheme();
+        checkSession();
     </script>
 </body>
 </html>
