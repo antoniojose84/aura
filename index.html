@@ -392,11 +392,11 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
 
-        // Inicializar Firebase
+        // Inicializar Firebase. Esto se hace una vez al cargar la p\u00e1gina.
         let app = null;
         let auth = null;
         let db = null;
-        let isAuthReady = false; // Nueva variable para rastrear la preparaci\u00f3n de la autenticaci\u00f3n
+        let postsListenerUnsubscribe = null; // Para detener la escucha de posts cuando se cierra sesi\u00f3n
 
         if (firebaseConfig) {
             app = initializeApp(firebaseConfig);
@@ -404,14 +404,14 @@
             db = getFirestore(app);
             console.log("[Firebase] Inicializado con configuraci\u00f3n del entorno.");
         } else {
-            console.error("[Firebase] No se encontr\u00f3 la configuraci\u00f3n de Firebase. La aplicaci\u00f3n no podr\u00e1 conectarse a la base de datos.");
+            // Si la configuraci\u00f3n no est\u00e1 disponible, no podemos usar Firebase.
+            console.error("[Firebase] No se encontr\u00f3 la configuraci\u00f3n de Firebase.");
         }
 
         // Variables del estado de la aplicaci\u00f3n
         let currentUser = null;
         let username = 'Usuario';
         let userId = null;
-        let postsListenerUnsubscribe = null;
         
         // Elementos del DOM
         const body = document.body;
@@ -431,7 +431,7 @@
         const loginButton = document.getElementById('login-button');
         const signupEmailInput = document.getElementById('signup-email');
         const signupUsernameInput = document.getElementById('signup-username');
-        const signupPasswordInput = document = document.getElementById('signup-password');
+        const signupPasswordInput = document.getElementById('signup-password');
         const signupButton = document.getElementById('signup-button');
         const logoutButton = document.getElementById('logout-button');
         const newPostTrigger = document.getElementById('new-post-trigger');
@@ -668,8 +668,8 @@
             const email = loginEmailInput.value;
             const password = loginPasswordInput.value;
 
-            // Verificaci\u00f3n de seguridad, aunque los botones est\u00e9n deshabilitados
-            if (!isAuthReady || !auth || !db) {
+            // Verificar que Firebase est\u00e9 listo antes de continuar
+            if (!auth || !db) {
                 showErrorMessage(translations[currentLang].firebaseNotAvailable);
                 return;
             }
@@ -691,8 +691,8 @@
             const password = signupPasswordInput.value;
             const newUsername = signupUsernameInput.value;
             
-            // Verificaci\u00f3n de seguridad, aunque los botones est\u00e9n deshabilitados
-            if (!isAuthReady || !auth || !db) {
+            // Verificar que Firebase est\u00e9 listo antes de continuar
+            if (!auth || !db) {
                 showErrorMessage(translations[currentLang].firebaseNotAvailable);
                 return;
             }
@@ -719,7 +719,7 @@
             try {
                 console.log('[Auth] Intentando cerrar sesi\u00f3n...');
                 if (postsListenerUnsubscribe) {
-                    postsListenerUnsubscribe();
+                    postsListenerUnsubscribe(); // Detener la escucha de posts
                 }
                 if (auth) {
                     await signOut(auth);
@@ -773,12 +773,13 @@
                 showErrorMessage('El contenido del post no puede estar vac\u00edo.');
                 return;
             }
-            if (!isAuthReady || !db) {
+            if (!db) {
                  showErrorMessage(translations[currentLang].firebaseNotAvailable);
                  return;
             }
 
             try {
+                // Agregar el post a la colecci\u00f3n p\u00fablica
                 await addDoc(collection(db, `artifacts/${appId}/public/data/posts`), {
                     content: postContent,
                     authorId: userId,
@@ -808,7 +809,7 @@
             showScreen(mainScreen);
         });
         
-        // Funci\u00f3n para renderizar un post
+        // Funci\u00f3n para renderizar un post en la pantalla
         function renderPost(post) {
             const postElement = document.createElement('div');
             postElement.className = 'neumorphism-card p-4 rounded-xl overflow-hidden mb-6';
@@ -830,32 +831,32 @@
             return postElement;
         }
 
-        // Listener en tiempo real para las publicaciones de Firestore
+        // Funci\u00f3n para escuchar los posts de Firestore en tiempo real
         function setupPostsListener() {
             if (!db) {
                 console.log("[Firestore] No se puede configurar el listener de posts, db no est\u00e1 inicializado.");
                 return;
             }
             if (postsListenerUnsubscribe) {
-                postsListenerUnsubscribe(); // Desuscribirse del listener anterior
+                postsListenerUnsubscribe(); // Detener el listener anterior
             }
             
             postsContainer.innerHTML = `<p id="loading-posts-message" class="text-center text-gray-500 dark:text-gray-400" data-lang-key="loadingPosts">Cargando publicaciones...</p>`;
 
             const postsCollectionRef = collection(db, `artifacts/${appId}/public/data/posts`);
             postsListenerUnsubscribe = onSnapshot(postsCollectionRef, (snapshot) => {
-                postsContainer.innerHTML = ''; // Limpiar el contenedor de posts
+                postsContainer.innerHTML = ''; // Limpiar el contenedor
                 if (snapshot.empty) {
                     postsContainer.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400">${translations[currentLang].noPosts}</p>`;
                 } else {
                     const sortedPosts = [];
                     snapshot.forEach(doc => {
                         const postData = doc.data();
-                        postData.id = doc.id; // Guardar el ID del documento
+                        postData.id = doc.id; // Guardar el ID
                         sortedPosts.push(postData);
                     });
                     
-                    // Ordenar posts por timestamp de forma descendente
+                    // Ordenar posts por fecha de creaci\u00f3n de forma descendente
                     sortedPosts.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                     
                     sortedPosts.forEach(post => {
@@ -869,7 +870,7 @@
             });
         }
         
-        // Funci\u00f3n para obtener el nombre de usuario
+        // Funci\u00f3n para obtener el nombre de usuario del perfil
         async function fetchUsername(uid) {
             if (!db) return 'Usuario';
             try {
@@ -880,25 +881,22 @@
                     return profileDoc.data().username;
                 }
             } catch (error) {
-                console.error("[Firestore] Error fetching username:", error);
+                console.error("[Firestore] Error al obtener el nombre de usuario:", error);
                 return 'Usuario';
             }
             return 'Usuario';
         }
 
-        // Listener de autenticaci\u00f3n para manejar los cambios de estado del usuario
-        // Esta es la \u00fanica fuente de verdad para el estado de autenticaci\u00f3n
+        // Listener de autenticaci\u00f3n principal. Esta es la funci\u00f3n m\u00e1s importante.
+        // Se ejecuta cada vez que el estado del usuario cambia (inicia o cierra sesi\u00f3n).
         if (auth) {
             onAuthStateChanged(auth, async (user) => {
                 console.log('[Auth] Evento onAuthStateChanged disparado. Usuario:', user ? user.uid : 'null');
                 
-                // Habilitar los botones una vez que se complete la verificaci\u00f3n de autenticaci\u00f3n
-                if (!isAuthReady) {
-                    loginButton.disabled = false;
-                    signupButton.disabled = false;
-                    publishButton.disabled = false;
-                    isAuthReady = true;
-                }
+                // Habilitamos los botones aqu\u00ed, una vez que Firebase nos confirma que todo est\u00e1 listo.
+                loginButton.disabled = false;
+                signupButton.disabled = false;
+                publishButton.disabled = false;
 
                 if (user) {
                     // Usuario autenticado
@@ -906,12 +904,12 @@
                     userId = user.uid;
 
                     try {
-                        // Cargar el nombre de usuario y configurar el listener de posts en paralelo
+                        // Obtenemos el nombre de usuario y configuramos el listener de posts
                         const fetchedUsername = await fetchUsername(userId);
                         username = fetchedUsername;
                         setupPostsListener();
                         
-                        // Actualizar la interfaz de usuario con la informaci\u00f3n del usuario
+                        // Actualizamos la interfaz con la informaci\u00f3n del usuario
                         profileUsername.textContent = username;
                         profileUserId.textContent = userId;
                         userAvatarMain.src = `https://placehold.co/40x40/5e43f3/ffffff?text=${username[0]}`;
@@ -922,11 +920,11 @@
                     } catch (error) {
                         console.error('[App] Error al cargar datos del usuario:', error);
                         showErrorMessage('Error al cargar datos del usuario: ' + error.message);
-                        await signOut(auth); // Cierra la sesi\u00f3n si falla la carga de datos
+                        await signOut(auth); // Cerramos sesi\u00f3n si hay un error
                     }
 
                 } else {
-                    // No hay usuario autenticado, mostrar la pantalla de inicio de sesi\u00f3n
+                    // No hay usuario, mostramos la pantalla de inicio
                     console.log('[App] No hay usuario, mostrando pantalla de login.');
                     currentUser = null;
                     userId = null;
@@ -937,56 +935,43 @@
                     showScreen(loginScreen);
                 }
             });
+        } else {
+            // Si Firebase no est\u00e1 disponible, no podemos hacer nada.
+            showErrorMessage(translations[currentLang].firebaseNotAvailable);
+            showScreen(loginScreen);
         }
         
-        // Cargar el tema y el idioma al iniciar la aplicaci\u00f3n, y mostrar la pantalla de carga
+        // Esta funci\u00f3n se ejecuta cuando se carga la p\u00e1gina.
+        // Solo configura el tema y el idioma, y muestra la pantalla de carga.
+        // Espera a que el listener de autenticaci\u00f3n haga el resto.
         window.onload = function() {
-            console.log('[App] Aplicaci\u00f3n iniciada. Configurando UI y esperando autenticaci\u00f3n...');
+            console.log('[App] Aplicaci\u00f3n iniciada. Configurando UI...');
             loadTheme();
             setLanguage('es');
             showScreen(loadingScreen);
 
-            // Si auth no est\u00e1 disponible, salta directamente a la pantalla de login
-            if (!auth) {
-                console.log('[App] Firebase Auth no est\u00e1 disponible. Saltando a la pantalla de login.');
-                setTimeout(() => {
-                    showScreen(loginScreen);
-                    isAuthReady = true;
-                    loginButton.disabled = false;
-                    signupButton.disabled = false;
-                }, 500); // Peque\u00f1o retraso para el efecto de carga
-                return;
-            }
-
-            // Si auth est\u00e1 disponible pero a\u00fan no hay usuario, intenta el inicio de sesi\u00f3n an\u00f3nimo
-            // Esto solo es relevante si estamos en el entorno de Canvas.
-            if (typeof __initial_auth_token !== 'undefined' && auth) {
-                console.log("[Auth] Usando token de autenticaci\u00f3n personalizado.");
-                 signInWithCustomToken(auth, __initial_auth_token)
-                    .then(() => {
-                        console.log("[Auth] Inicio de sesi\u00f3n con token personalizado exitoso.");
-                    })
-                    .catch((error) => {
-                        console.error("[Auth] Error al iniciar sesi\u00f3n con token personalizado:", error);
-                        // Si falla, intenta an\u00f3nimamente como respaldo.
-                        signInAnonymously(auth);
-                    });
-            } else if (auth) {
-                // Si no hay token, inicia la sesi\u00f3n an\u00f3nima
-                signInAnonymously(auth)
-                    .then(() => {
-                        console.log("[Auth] Inicio de sesi\u00f3n an\u00f3nimo exitoso.");
-                    })
-                    .catch((error) => {
-                        console.error("[Auth] Error al iniciar sesi\u00f3n an\u00f3nima:", error);
-                        // En caso de error, muestra el login
-                        isAuthReady = true;
-                        loginButton.disabled = false;
-                        signupButton.disabled = false;
-                        showScreen(loginScreen);
-                    });
-            } else {
-                 console.log('[App] Esperando a que el usuario interact\u00fae.');
+            // Intentamos iniciar sesi\u00f3n an\u00f3nima si el entorno lo permite.
+            // Esto solo se hace una vez.
+            if (auth) {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    console.log("[Auth] Usando token de autenticaci\u00f3n personalizado.");
+                     signInWithCustomToken(auth, __initial_auth_token)
+                        .then(() => {
+                            console.log("[Auth] Inicio de sesi\u00f3n con token personalizado exitoso.");
+                        })
+                        .catch((error) => {
+                            console.error("[Auth] Error al iniciar sesi\u00f3n con token personalizado:", error);
+                            signInAnonymously(auth);
+                        });
+                } else {
+                    signInAnonymously(auth)
+                        .then(() => {
+                            console.log("[Auth] Inicio de sesi\u00f3n an\u00f3nimo exitoso.");
+                        })
+                        .catch((error) => {
+                            console.error("[Auth] Error al iniciar sesi\u00f3n an\u00f3nima:", error);
+                        });
+                }
             }
         }
     </script>
