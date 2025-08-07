@@ -409,7 +409,7 @@
         const updateModal = document.getElementById('update-modal');
         const closeUpdateModalButton = document.getElementById('close-update-modal');
         const profileButton = document.getElementById('profile-button'); 
-        const backButton = document.getElementById('back-button'); // Nuevo botón de retroceso
+        const backButton = document.getElementById('back-button'); // Botón de retroceso en la pantalla de perfil
         const searchButton = document.getElementById('search-button');
 
         // Textos para diferentes idiomas
@@ -433,7 +433,6 @@
                 'signupEmailPlaceholder': 'Correo electrónico',
                 'signupUsernamePlaceholder': 'Nombre de usuario',
                 'signupPasswordPlaceholder': 'Contraseña',
-                // Nuevas traducciones para la pantalla de perfil
                 'editProfileButton': 'Editar perfil',
                 'shareProfileButton': 'Compartir perfil',
                 'hilosTab': 'Hilos',
@@ -468,7 +467,6 @@
                 'signupEmailPlaceholder': 'Email',
                 'signupUsernamePlaceholder': 'Username',
                 'signupPasswordPlaceholder': 'Password',
-                // Nuevas traducciones para la pantalla de perfil
                 'editProfileButton': 'Edit profile',
                 'shareProfileButton': 'Share profile',
                 'hilosTab': 'Threads',
@@ -503,7 +501,6 @@
                 'signupEmailPlaceholder': 'E-mail',
                 'signupUsernamePlaceholder': 'Nom d\'utilisateur',
                 'signupPasswordPlaceholder': 'Mot de passe',
-                // Nuevas traducciones para la pantalla de perfil
                 'editProfileButton': 'Modifier le profil',
                 'shareProfileButton': 'Partager le profil',
                 'hilosTab': 'Hilos',
@@ -635,11 +632,14 @@
 
         // Lógica para el botón de perfil: Muestra la pantalla de perfil
         profileButton.addEventListener('click', () => {
+            // Mensaje de depuración para confirmar que el botón es presionado
+            console.log("Botón de perfil presionado. Cambiando a la pantalla de perfil.");
             showScreen(profileScreen);
         });
 
         // Lógica para el botón de retroceso en la pantalla de perfil
         backButton.addEventListener('click', () => {
+            console.log("Botón de retroceso presionado. Volviendo a la pantalla principal.");
             showScreen(mainScreen);
         });
         
