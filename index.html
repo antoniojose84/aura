@@ -65,12 +65,12 @@
         }
 
         /* Estilos para el efecto de "vidrio esmerilado" en las barras de navegación */
-        .glass-navbar {
+        .glass-pill {
             backdrop-filter: blur(20px);
             background-color: rgba(224, 229, 236, 0.7); /* Fondo semi-transparente claro */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .dark .glass-navbar {
+        .dark .glass-pill {
             background-color: rgba(30, 32, 35, 0.7); /* Fondo semi-transparente oscuro */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
@@ -183,7 +183,7 @@
         <!-- Pantalla principal de la red social -->
         <div id="main-screen" class="screen hidden">
             <!-- Header de la pantalla principal con botones de navegación (con efecto de vidrio) -->
-            <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-navbar z-50">
+            <div class="fixed top-0 left-0 right-0 max-w-sm mx-auto flex items-center justify-between p-4 glass-pill z-50 rounded-b-3xl">
                 <button class="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
                     <i class="fas fa-bars"></i>
                 </button>
@@ -231,32 +231,35 @@
                     </div>
                 </div>
             </div>
-             <!-- Barra de navegación inferior flotante (con efecto de vidrio) -->
-            <div class="fixed bottom-4 left-1/2 -translate-x-1/2 max-w-sm w-[90%] flex justify-around p-4 glass-navbar rounded-full z-50">
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple neumorphism-button focus:outline-none">
-                    <i class="fas fa-home"></i>
+             <!-- Contenedor para la barra de navegación y el buscador flotante -->
+            <div class="fixed bottom-4 left-1/2 -translate-x-1/2 max-w-sm flex justify-center space-x-2 z-50">
+                <!-- Barra de navegación inferior flotante (en forma de píldora) -->
+                <div class="flex justify-around p-2 glass-pill rounded-full shadow-lg">
+                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple focus:outline-none">
+                        <i class="fas fa-home"></i>
+                    </button>
+                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 focus:outline-none">
+                        <i class="fas fa-user"></i>
+                    </button>
+                </div>
+                 <!-- Botón para crear nuevo post (píldora central flotante) -->
+                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-social-purple glass-pill shadow-lg focus:outline-none">
+                     <i class="fas fa-plus"></i>
                 </button>
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-envelope"></i>
-                </button>
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-plus"></i>
-                </button>
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-heart"></i>
-                </button>
-                <button class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button focus:outline-none">
-                    <i class="fas fa-user"></i>
+                 <!-- Buscador flotante (píldora redonda) -->
+                <button id="search-button" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 glass-pill shadow-lg focus:outline-none">
+                    <i class="fas fa-search"></i>
                 </button>
             </div>
+
         </div>
     </div>
-
-    <!-- Buscador flotante -->
-    <button id="search-button" class="fixed bottom-4 right-4 w-12 h-12 flex items-center justify-center rounded-full text-2xl text-gray-500 dark:text-gray-400 neumorphism-button z-50 focus:outline-none">
-        <i class="fas fa-search"></i>
-    </button>
-
 
     <!-- Modal para el menú de publicación -->
     <div id="new-post-modal" class="modal">
