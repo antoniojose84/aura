@@ -1,19 +1,21 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Red Social</title>
-    <!-- Tailwind CSS desde CDN para un estilo moderno y responsivo -->
+    <title>Mi Red Social Dinámica</title>
+    <!-- Usamos Tailwind CSS para un estilo moderno y rápido -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Configuración de Tailwind para usar la fuente 'Inter'
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
+                    colors: {
+                        'social-purple': '#5e43f3', // Color personalizado basado en tu imagen
+                    }
                 },
             },
         };
@@ -21,339 +23,86 @@
     <!-- Iconos de Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
-        /* Estilos básicos para el cuerpo de la página */
         body {
-            background-color: #f3f4f6; /* Fondo gris claro por defecto */
-            color: #1f2937; /* Texto oscuro */
+            background-color: #f3f4f6;
+            color: #1f2937;
         }
         @media (prefers-color-scheme: dark) {
             body {
-                background-color: #111827; /* Fondo gris oscuro para modo oscuro */
-                color: #f9fafb; /* Texto claro */
+                background-color: #111827;
+                color: #f9fafb;
             }
-        }
-        /* Aseguramos que la aplicación ocupe toda la pantalla */
-        #app-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        /* Estilo para los botones de la barra de navegación */
-        .nav-btn {
-            padding: 8px;
-            border-radius: 9999px; /* Botones redondos */
-            transition: all 0.2s;
-        }
-        .nav-btn:hover {
-            background-color: #e5e7eb; /* Fondo claro al pasar el mouse */
-            color: #2563eb; /* Color azul al pasar el mouse */
-        }
-        .nav-btn.active {
-            background-color: #dbeafe; /* Fondo azul claro para el botón activo */
-            color: #2563eb; /* Color azul para el botón activo */
         }
     </style>
 </head>
 <body class="font-sans antialiased">
-    <div id="app-container">
-        <!-- El contenido de la aplicación se renderizará aquí -->
+
+    <!-- Contenedor principal de la aplicación -->
+    <div id="app-container" class="container mx-auto p-4 md:p-8 max-w-xl">
+        <h1 class="text-3xl font-bold text-center mb-8 text-blue-600 dark:text-blue-400">
+            Mi Red Social
+        </h1>
+
+        <!-- Sección de login (funcionalidad de login por ahora no esta disponible) -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 text-center">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Inicia sesión</h2>
+            <div class="flex justify-center space-x-4">
+                <!-- Botón de Google -->
+                <button class="bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                    <i class="fab fa-google text-2xl text-red-500"></i>
+                </button>
+                <!-- Botón de Twitter -->
+                <button class="bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                    <i class="fab fa-twitter text-2xl text-blue-400"></i>
+                </button>
+                <!-- Botón genérico de red social con ícono personalizado y color púrpura -->
+                <button class="bg-social-purple text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                    <!-- Usamos un SVG como icono para que coincida con el estilo que buscabas -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                        <circle cx="12" cy="12" r="10" />
+                    </svg>
+                </button>
+            </div>
+            <a href="#" class="text-blue-500 hover:underline mt-4 inline-block">Crear nueva cuenta</a>
+        </div>
+
+        <!-- Los posts se cargarán aquí, esta sección es estática por ahora -->
+        <div id="posts-container">
+            <!-- Tarjeta de post 1 -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
+                <div class="flex items-center p-4">
+                    <img src="https://placehold.co/40x40/FF5733/ffffff?text=J" alt="Avatar de Juan" class="w-10 h-10 rounded-full mr-3 border-2 border-blue-500">
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-white">Juan</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Hace 1 hora</p>
+                    </div>
+                </div>
+                <p class="px-4 text-gray-700 dark:text-gray-300 mb-4">¡Hola a todos! Este es un post de prueba para la actualización.</p>
+                <img src="https://placehold.co/600x400/5833FF/ffffff?text=Paisaje" alt="Post de Juan" class="w-full h-64 object-cover">
+                <div class="flex items-center p-4 border-t border-gray-200 dark:border-gray-700">
+                    <span class="text-gray-600 dark:text-gray-400 mr-4">15 Me gusta</span>
+                    <span class="text-gray-600 dark:text-gray-400">3 comentarios</span>
+                </div>
+            </div>
+
+            <!-- Tarjeta de post 2 -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
+                <div class="flex items-center p-4">
+                    <img src="https://placehold.co/40x40/33FF57/ffffff?text=A" alt="Avatar de Ana" class="w-10 h-10 rounded-full mr-3 border-2 border-blue-500">
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-white">Ana</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Hace 30 minutos</p>
+                    </div>
+                </div>
+                <p class="px-4 text-gray-700 dark:text-gray-300 mb-4">¡Qué día tan increíble! 😊</p>
+                <img src="https://placehold.co/600x400/33FF57/ffffff?text=Aventura" alt="Post de Ana" class="w-full h-64 object-cover">
+                <div class="flex items-center p-4 border-t border-gray-200 dark:border-gray-700">
+                    <span class="text-gray-600 dark:text-gray-400 mr-4">28 Me gusta</span>
+                    <span class="text-gray-600 dark:text-gray-400">8 comentarios</span>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <script>
-        // Simulamos los datos de los posts
-        const mockPosts = [
-            {
-                id: 1,
-                user: 'Juan',
-                avatar: 'https://placehold.co/40x40/FF5733/ffffff?text=J',
-                content: '¡Hola a todos! Feliz de estar aquí.',
-                likes: 15,
-                comments: 3,
-                image: 'https://placehold.co/600x400/5833FF/ffffff?text=Paisaje',
-            },
-            {
-                id: 2,
-                user: 'Ana',
-                avatar: 'https://placehold.co/40x40/33FF57/ffffff?text=A',
-                content: 'Compartiendo una foto de mi última aventura. ¡Qué día tan increíble!',
-                likes: 28,
-                comments: 8,
-                image: 'https://placehold.co/600x400/33FF57/ffffff?text=Aventura',
-            },
-            {
-                id: 3,
-                user: 'Carlos',
-                avatar: 'https://placehold.co/60x60/5733FF/ffffff?text=C',
-                content: 'Mi nueva mascota, un gatito adorable.',
-                likes: 50,
-                comments: 12,
-                image: 'https://placehold.co/600x400/5733FF/ffffff?text=Gatito',
-            },
-        ];
-
-        // Estado global de la aplicación
-        let appState = {
-            isLoggedIn: false,
-            user: null,
-            currentPage: 'login', // Puede ser 'login', 'register', 'home', 'profile'
-        };
-
-        // Función para renderizar el post
-        function renderPost(post) {
-            return `
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-4 border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center p-4">
-                        <img src="${post.avatar}" alt="${post.user}" class="w-10 h-10 rounded-full mr-3 border-2 border-blue-500" />
-                        <div>
-                            <span class="font-semibold text-gray-900 dark:text-white">${post.user}</span>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Hace 1 hora</p>
-                        </div>
-                    </div>
-                    <p class="px-4 text-gray-700 dark:text-gray-300 mb-4">${post.content}</p>
-                    ${post.image ? `<img src="${post.image}" alt="Post content" class="w-full object-cover" />` : ''}
-                    <div class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
-                        <div class="flex space-x-4 text-gray-600 dark:text-gray-400">
-                            <button class="flex items-center space-x-1 hover:text-red-500 transition duration-200">
-                                <i class="fas fa-heart w-5 h-5"></i>
-                                <span>${post.likes}</span>
-                            </button>
-                            <button class="flex items-center space-x-1 hover:text-blue-500 transition duration-200">
-                                <i class="fas fa-comment-alt w-5 h-5"></i>
-                                <span>${post.comments}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Función para renderizar el feed
-        function renderHomeFeed() {
-            const postsHtml = mockPosts.map(post => renderPost(post)).join('');
-            return `
-                <div class="p-4 md:p-8 bg-gray-100 dark:bg-gray-900 min-h-screen flex-grow">
-                    <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Feed</h1>
-                    ${postsHtml}
-                </div>
-            `;
-        }
-
-        // Función para renderizar la página de perfil
-        function renderUserProfile() {
-            const myPosts = mockPosts.filter(p => p.user === 'Juan'); // Simulación
-            const postsHtml = myPosts.length > 0
-                ? myPosts.map(post => renderPost(post)).join('')
-                : `<p class="text-gray-500 dark:text-gray-400">Aún no tienes publicaciones.</p>`;
-
-            return `
-                <div class="p-4 md:p-8 bg-gray-100 dark:bg-gray-900 min-h-screen flex-grow">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 text-center border border-gray-200 dark:border-gray-700">
-                        <img src="https://placehold.co/100x100/FF5733/ffffff?text=J" alt="Avatar del usuario" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-blue-500" />
-                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">${appState.user?.username || 'Usuario'}</h1>
-                        <p class="text-gray-600 dark:text-gray-400">¡Bienvenido a tu perfil!</p>
-                    </div>
-                    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Tus Publicaciones</h2>
-                    ${postsHtml}
-                </div>
-            `;
-        }
-
-        // Función para renderizar el formulario de inicio de sesión
-        function renderLogin() {
-            return `
-                <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4 flex-grow">
-                    <div class="w-full max-w-sm p-8 space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-                        <div class="flex flex-col items-center">
-                            <i class="fab fa-facebook text-5xl text-blue-600 dark:text-blue-500 mb-4"></i>
-                            <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white">Iniciar Sesión</h2>
-                        </div>
-                        <form id="login-form" class="space-y-4">
-                            <div>
-                                <label class="sr-only" for="username">Usuario</label>
-                                <input id="login-username" type="text" placeholder="Usuario o correo electrónico" class="w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                            </div>
-                            <div>
-                                <label class="sr-only" for="password">Contraseña</label>
-                                <input id="login-password" type="password" placeholder="Contraseña" class="w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                            </div>
-                            <button type="submit" class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
-                                Entrar
-                            </button>
-                        </form>
-                        <div class="text-center text-sm text-gray-600 dark:text-gray-400">
-                            <button onclick="changePage('register')" class="text-blue-600 hover:underline">
-                                Crea una cuenta
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Función para renderizar el formulario de registro
-        function renderRegister() {
-             return `
-                <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4 flex-grow">
-                    <div class="w-full max-w-sm p-8 space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-                        <div class="flex flex-col items-center">
-                            <i class="fas fa-user-plus text-5xl text-blue-600 dark:text-blue-500 mb-4"></i>
-                            <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white">Crear una Cuenta</h2>
-                        </div>
-                        <form id="register-form" class="space-y-4">
-                            <div class="relative">
-                                <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input id="register-username" type="text" placeholder="Nombre de usuario" class="w-full pl-10 pr-4 py-2 text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                            </div>
-                            <div class="relative">
-                                <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input id="register-email" type="email" placeholder="Correo electrónico" class="w-full pl-10 pr-4 py-2 text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                            </div>
-                            <div class="relative">
-                                <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input id="register-password" type="password" placeholder="Contraseña" class="w-full pl-10 pr-4 py-2 text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                            </div>
-                            <button type="submit" class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
-                                Registrarse
-                            </button>
-                        </form>
-                        <div class="text-center text-sm text-gray-600 dark:text-gray-400">
-                            <p>¿Ya tienes una cuenta?</p>
-                            <button onclick="changePage('login')" class="text-blue-600 hover:underline">
-                                Inicia sesión
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Función para renderizar la barra de navegación
-        function renderNavbar() {
-            return `
-                <nav class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fab fa-facebook text-3xl text-blue-600 dark:text-blue-500 mr-2"></i>
-                            <span class="font-bold text-xl text-gray-900 dark:text-white hidden md:block">miRedSocial</span>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <button onclick="changePage('home')" class="nav-btn ${appState.currentPage === 'home' ? 'active' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}">
-                                <i class="fas fa-home text-2xl"></i>
-                            </button>
-                            <button onclick="changePage('profile')" class="nav-btn ${appState.currentPage === 'profile' ? 'active' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}">
-                                <i class="fas fa-user text-2xl"></i>
-                            </button>
-                            <button onclick="logout()" class="nav-btn text-gray-600 dark:text-gray-400 hover:bg-red-100 hover:text-red-600">
-                                <i class="fas fa-sign-out-alt text-2xl"></i>
-                            </button>
-                        </div>
-                    </div>
-                </nav>
-            `;
-        }
-
-        // Función principal que se encarga de renderizar toda la aplicación
-        function renderApp() {
-            const container = document.getElementById('app-container');
-            container.innerHTML = ''; // Limpiamos el contenido anterior
-
-            let contentHtml = '';
-            if (appState.isLoggedIn) {
-                // Si el usuario ha iniciado sesión
-                let mainContent = '';
-                switch (appState.currentPage) {
-                    case 'home':
-                        mainContent = renderHomeFeed();
-                        break;
-                    case 'profile':
-                        mainContent = renderUserProfile();
-                        break;
-                    default:
-                        mainContent = renderHomeFeed();
-                }
-                contentHtml = renderNavbar() + mainContent;
-            } else {
-                // Si el usuario no ha iniciado sesión
-                switch (appState.currentPage) {
-                    case 'register':
-                        contentHtml = renderRegister();
-                        break;
-                    default: // 'login'
-                        contentHtml = renderLogin();
-                }
-            }
-            container.innerHTML = contentHtml;
-            attachEventListeners();
-        }
-
-        // Función para manejar los eventos de los formularios
-        function attachEventListeners() {
-            // Manejador para el formulario de inicio de sesión
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) {
-                loginForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const username = document.getElementById('login-username').value;
-                    const password = document.getElementById('login-password').value;
-                    if (username && password) {
-                        appState.isLoggedIn = true;
-                        appState.user = { username: username };
-                        appState.currentPage = 'home';
-                        renderApp();
-                    } else {
-                        // Aquí podrías mostrar un mensaje de error si fuera necesario
-                    }
-                });
-            }
-
-            // Manejador para el formulario de registro
-            const registerForm = document.getElementById('register-form');
-            if (registerForm) {
-                registerForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const username = document.getElementById('register-username').value;
-                    const email = document.getElementById('register-email').value;
-                    const password = document.getElementById('register-password').value;
-                    if (username && email && password) {
-                         const modal = document.createElement('div');
-                         modal.innerHTML = `
-                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                                <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm w-full">
-                                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">¡Éxito!</h3>
-                                    <p class="text-gray-700 dark:text-gray-300 mb-6">Cuenta creada exitosamente. Por favor, inicia sesión.</p>
-                                    <button onclick="this.closest('.fixed').remove()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200">
-                                        OK
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        document.body.appendChild(modal);
-                        changePage('login'); // Redirigir a la página de inicio de sesión
-                    }
-                });
-            }
-        }
-
-        // Función para cambiar de página
-        function changePage(page) {
-            appState.currentPage = page;
-            renderApp();
-        }
-
-        // Función para cerrar sesión
-        function logout() {
-            appState.isLoggedIn = false;
-            appState.user = null;
-            appState.currentPage = 'login';
-            renderApp();
-        }
-
-        // Inicializar la aplicación al cargar la página
-        window.onload = function() {
-            renderApp();
-        };
-
-    </script>
 
 </body>
 </html>
