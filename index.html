@@ -1,14 +1,143 @@
-{
-  "name": "mi-red-social",
-  "version": "1.0.0",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "nodemailer": "^6.9.1",
-    "body-parser": "^1.20.2"
-  }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi Red Social</title>
+<style>
+body{font-family:sans-serif;background:#f0f2f5;margin:0;}
+.screen{display:none;text-align:center;padding:20px;}
+.active{display:block;}
+input,button,textarea{width:80%;margin:5px;padding:10px;border-radius:6px;border:1px solid #ccc;}
+button{background:#1877f2;color:white;border:none;cursor:pointer;}
+button:hover{background:#145db8;}
+.post{background:#fff;margin:10px auto;padding:10px;max-width:80%;border-radius:8px;text-align:left;}
+</style>
+</head>
+<body>
+
+<!-- Pantalla inicio -->
+<div id="welcome" class="screen active">
+  <h1>Bienvenido</h1>
+  <button onclick="showScreen('register')">Crear cuenta</button>
+</div>
+
+<!-- Registro -->
+<div id="register" class="screen">
+  <h2>Registro</h2>
+  <input id="regUsername" placeholder="Usuario">
+  <input id="regEmail" placeholder="Correo">
+  <input id="regPassword" type="password" placeholder="Contraseña">
+  <button onclick="registerUser()">Crear</button>
+  <button onclick="showScreen('welcome')">Volver</button>
+</div>
+
+<!-- Verificación -->
+<div id="verify" class="screen">
+  <h2>Verifica tu correo</h2>
+  <input id="verifyCode" placeholder="Código recibido">
+  <button onclick="verifyUser()">Verificar</button>
+</div>
+
+<!-- Feed -->
+<div id="feed" class="screen">
+  <h2>Feed</h2>
+  <textarea id="postInput" placeholder="¿Qué estás pensando?"></textarea>
+  <button onclick="publishPost()">Publicar</button>
+  <div id="postsContainer"></div>
+  <button onclick="showScreen('welcome')">Cerrar sesión</button>
+</div>
+
+<script>
+// 📌 Cambia por la URL pública de tu backend en Render o Railway
+const API = "https://TU_BACKEND.onrender.com"; 
+
+let currentEmail = "", currentUser = "";
+
+// Cambiar pantalla
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id === "feed") loadFeed();
 }
+
+// Registro y envío de código
+function registerUser(){
+  const username = document.getElementById('regUsername').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value.trim();
+  if(!username || !email || !password) return alert("Completa todos los campos");
+
+  currentEmail = email;
+  currentUser = username;
+
+  fetch(API+"/api/register",{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username,email,password})
+  }).then(r=>r.json()).then(d=>{
+    if(d.success){
+      alert("Código enviado a tu correo 📩");
+      showScreen('verify');
+    } else {
+      alert(d.message);
+    }
+  }).catch(err => alert("Error de conexión: "+err));
+}
+
+// Verificar código
+function verifyUser(){
+  const code = document.getElementById('verifyCode').value.trim();
+  fetch(API+"/api/verify",{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:currentEmail, code})
+  }).then(r=>r.json()).then(d=>{
+    if(d.success){
+      alert("Cuenta verificada ✅");
+      showScreen('feed');
+      loadFeed();
+    } else {
+      alert(d.message || "Código incorrecto");
+    }
+  }).catch(err => alert("Error de conexión: "+err));
+}
+
+// Publicar post
+function publishPost(){
+  const text = document.getElementById('postInput').value.trim();
+  if(!text) return;
+  fetch(API+"/api/publicar",{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({user:currentUser, text})
+  }).then(r=>r.json()).then(d=>{
+    if(d.success) {
+      renderPosts(d.posts);
+      document.getElementById('postInput').value="";
+    }
+  }).catch(err => alert("Error publicando: "+err));
+}
+
+// Cargar feed
+function loadFeed(){
+  fetch(API+"/api/feed")
+    .then(r=>r.json())
+    .then(d=>renderPosts(d.posts))
+    .catch(err => alert("Error cargando feed: "+err));
+}
+
+// Renderizar publicaciones
+function renderPosts(posts){
+  const cont = document.getElementById('postsContainer');
+  cont.innerHTML = "";
+  if(!posts.length){
+    cont.innerHTML = "<p>No hay publicaciones</p>";
+    return;
+  }
+  posts.forEach(p=>{
+    cont.innerHTML += `<div class="post"><b>${p.user}</b><br>${p.text}</div>`;
+  });
+}
+</script>
+</body>
+</html>
