@@ -1,143 +1,488 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mi Red Social</title>
-<style>
-body{font-family:sans-serif;background:#f0f2f5;margin:0;}
-.screen{display:none;text-align:center;padding:20px;}
-.active{display:block;}
-input,button,textarea{width:80%;margin:5px;padding:10px;border-radius:6px;border:1px solid #ccc;}
-button{background:#1877f2;color:white;border:none;cursor:pointer;}
-button:hover{background:#145db8;}
-.post{background:#fff;margin:10px auto;padding:10px;max-width:80%;border-radius:8px;text-align:left;}
-</style>
-</head>
-<body>
+import React, { useState, useEffect } from 'react';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+import { getAuth, signInWithCustomToken, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import { getFirestore, collection, onSnapshot, doc, setDoc, getDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-<!-- Pantalla inicio -->
-<div id="welcome" class="screen active">
-  <h1>Bienvenido</h1>
-  <button onclick="showScreen('register')">Crear cuenta</button>
-</div>
+// No es necesario modificar estas variables en CodePen, ya que no estamos usando un entorno de backend.
+// El comportamiento de la app será limitado, pero la interfaz se visualizará.
+const appId = 'default-app-id';
+const firebaseConfig = {};
+const initialAuthToken = null;
 
-<!-- Registro -->
-<div id="register" class="screen">
-  <h2>Registro</h2>
-  <input id="regUsername" placeholder="Usuario">
-  <input id="regEmail" placeholder="Correo">
-  <input id="regPassword" type="password" placeholder="Contraseña">
-  <button onclick="registerUser()">Crear</button>
-  <button onclick="showScreen('welcome')">Volver</button>
-</div>
+// Main App component
+const App = () => {
+  const [currentPage, setCurrentPage] = useState('login');
+  const [db, setDb] = useState(null);
+  const [auth, setAuth] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
 
-<!-- Verificación -->
-<div id="verify" class="screen">
-  <h2>Verifica tu correo</h2>
-  <input id="verifyCode" placeholder="Código recibido">
-  <button onclick="verifyUser()">Verificar</button>
-</div>
+  // Initialize Firebase and set up auth listener on component mount
+  useEffect(() => {
+    try {
+      if (Object.keys(firebaseConfig).length > 0) {
+        const app = initializeApp(firebaseConfig);
+        const firestore = getFirestore(app);
+        const firebaseAuth = getAuth(app);
+        setDb(firestore);
+        setAuth(firebaseAuth);
 
-<!-- Feed -->
-<div id="feed" class="screen">
-  <h2>Feed</h2>
-  <textarea id="postInput" placeholder="¿Qué estás pensando?"></textarea>
-  <button onclick="publishPost()">Publicar</button>
-  <div id="postsContainer"></div>
-  <button onclick="showScreen('welcome')">Cerrar sesión</button>
-</div>
+        const unsubscribe = onAuthStateChanged(firebaseAuth, async (currentUser) => {
+          if (currentUser) {
+            setUser(currentUser);
+            // Fetch user profile after successful sign-in
+            fetchUserProfile(currentUser.uid, firestore);
+          } else {
+            // Sign in anonymously if no user is found
+            try {
+              if (initialAuthToken) {
+                await signInWithCustomToken(firebaseAuth, initialAuthToken);
+              }
+              // Wait for the auth listener to update state with the user
+            } catch (error) {
+              console.error("Firebase Auth error:", error);
+            }
+          }
+          setIsAuthReady(true);
+        });
 
-<script>
-// 📌 Cambia por la URL pública de tu backend en Render o Railway
-const API = "https://TU_BACKEND.onrender.com"; 
-
-let currentEmail = "", currentUser = "";
-
-// Cambiar pantalla
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if(id === "feed") loadFeed();
-}
-
-// Registro y envío de código
-function registerUser(){
-  const username = document.getElementById('regUsername').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const password = document.getElementById('regPassword').value.trim();
-  if(!username || !email || !password) return alert("Completa todos los campos");
-
-  currentEmail = email;
-  currentUser = username;
-
-  fetch(API+"/api/register",{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({username,email,password})
-  }).then(r=>r.json()).then(d=>{
-    if(d.success){
-      alert("Código enviado a tu correo 📩");
-      showScreen('verify');
-    } else {
-      alert(d.message);
+        return () => unsubscribe();
+      } else {
+        console.warn("Firebase config is missing. Firestore functionality will be disabled.");
+        setIsAuthReady(true);
+      }
+    } catch (error) {
+      console.error("Failed to initialize Firebase:", error);
+      setIsAuthReady(true);
     }
-  }).catch(err => alert("Error de conexión: "+err));
-}
+  }, []);
+  
+  // Function to fetch or create user profile in Firestore
+  const fetchUserProfile = async (userId, firestore) => {
+    if (!firestore || !userId) return;
+    try {
+      const userDocRef = doc(firestore, `artifacts/${appId}/users/${userId}/profile`, 'details');
+      const userDocSnap = await getDoc(userDocRef);
 
-// Verificar código
-function verifyUser(){
-  const code = document.getElementById('verifyCode').value.trim();
-  fetch(API+"/api/verify",{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:currentEmail, code})
-  }).then(r=>r.json()).then(d=>{
-    if(d.success){
-      alert("Cuenta verificada ✅");
-      showScreen('feed');
-      loadFeed();
-    } else {
-      alert(d.message || "Código incorrecto");
+      if (userDocSnap.exists()) {
+        setUserProfile(userDocSnap.data());
+      } else {
+        // Create a new profile document if one doesn't exist
+        const defaultProfile = {
+          name: user.displayName || 'Usuario Anónimo',
+          bio: 'Hola, soy un nuevo desarrollador.',
+          profilePic: user.photoURL || 'https://placehold.co/100x100/fbcfe8/000?text=U'
+        };
+        await setDoc(userDocRef, defaultProfile);
+        setUserProfile(defaultProfile);
+      }
+    } catch (error) {
+      console.error("Error fetching or creating user profile:", error);
     }
-  }).catch(err => alert("Error de conexión: "+err));
-}
+  };
 
-// Publicar post
-function publishPost(){
-  const text = document.getElementById('postInput').value.trim();
-  if(!text) return;
-  fetch(API+"/api/publicar",{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({user:currentUser, text})
-  }).then(r=>r.json()).then(d=>{
-    if(d.success) {
-      renderPosts(d.posts);
-      document.getElementById('postInput').value="";
+  // Function to navigate between pages
+  const navigateTo = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setUserProfile(null);
+      setCurrentPage('login');
+      console.log("User logged out successfully.");
+    } catch (error) {
+      console.error("Logout error:", error);
     }
-  }).catch(err => alert("Error publicando: "+err));
-}
+  };
 
-// Cargar feed
-function loadFeed(){
-  fetch(API+"/api/feed")
-    .then(r=>r.json())
-    .then(d=>renderPosts(d.posts))
-    .catch(err => alert("Error cargando feed: "+err));
-}
-
-// Renderizar publicaciones
-function renderPosts(posts){
-  const cont = document.getElementById('postsContainer');
-  cont.innerHTML = "";
-  if(!posts.length){
-    cont.innerHTML = "<p>No hay publicaciones</p>";
-    return;
+  if (!isAuthReady) {
+    return (
+      <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center">
+        <p className="text-xl">Cargando...</p>
+      </div>
+    );
   }
-  posts.forEach(p=>{
-    cont.innerHTML += `<div class="post"><b>${p.user}</b><br>${p.text}</div>`;
-  });
-}
-</script>
-</body>
-</html>
+
+  return (
+    <div className="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+      {currentPage === 'login' && <LoginPage navigateTo={navigateTo} auth={auth} />}
+      {currentPage === 'feed' && <FeedPage navigateTo={navigateTo} db={db} userId={user?.uid} />}
+      {currentPage === 'profile' && <ProfilePage navigateTo={navigateTo} db={db} user={user} userProfile={userProfile} onLogout={handleLogout} />}
+    </div>
+  );
+};
+
+// Login Page component
+const LoginPage = ({ navigateTo, auth }) => {
+  const handleGoogleLogin = async () => {
+    if (!auth) {
+      console.error("Auth object is not available.");
+      return;
+    }
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      navigateTo('feed');
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    if (!auth) {
+      console.error("Auth object is not available.");
+      return;
+    }
+    const provider = new FacebookAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      navigateTo('feed');
+    } catch (error) {
+      console.error("Facebook sign-in error:", error);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-sm mx-auto p-6 bg-gray-800 rounded-2xl shadow-lg">
+      <div className="flex justify-center mb-6">
+        <div className="w-12 h-12 bg-white rounded-full"></div>
+      </div>
+      <h1 className="text-3xl font-bold text-center mb-6">Inicia sesión o regístrate</h1>
+
+      <div className="space-y-4">
+        <SocialButton
+          provider="Google"
+          icon="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_de_Google_%22G%22.svg"
+          onClick={handleGoogleLogin}
+        />
+        <SocialButton
+          provider="Facebook"
+          icon="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
+          onClick={handleFacebookLogin}
+        />
+      </div>
+
+      <p className="mt-6 text-xs text-center text-gray-500">
+        ¿Necesitas ayuda para iniciar sesión?
+      </p>
+    </div>
+  );
+};
+
+// Social Button component
+const SocialButton = ({ provider, icon, onClick }) => (
+  <button
+    onClick={onClick}
+    className="w-full py-3 flex items-center justify-center bg-gray-700 hover:bg-gray-600 rounded-xl transition duration-300"
+  >
+    <img src={icon} alt={`${provider} logo`} className="w-6 h-6 mr-3" onError={(e) => e.target.style.display = 'none'} />
+    <span className="font-semibold">Continuar con {provider}</span>
+  </button>
+);
+
+// Feed Page component
+const FeedPage = ({ navigateTo, db, userId }) => {
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch all users' posts for the main feed
+  useEffect(() => {
+    if (!db || !userId) {
+      setIsLoading(false);
+      return;
+    }
+
+    const postsCollectionRef = collection(db, `artifacts/${appId}/users`);
+    
+    const unsubscribe = onSnapshot(postsCollectionRef, async (usersSnapshot) => {
+      const allPosts = [];
+      const userPromises = usersSnapshot.docs.map(async (userDoc) => {
+        const userUid = userDoc.id;
+        const userPostsCollectionRef = collection(db, `artifacts/${appId}/users/${userUid}/posts`);
+        const postsSnapshot = await getDocs(userPostsCollectionRef);
+        postsSnapshot.forEach(postDoc => {
+          allPosts.push({ id: postDoc.id, ...postDoc.data() });
+        });
+      });
+      await Promise.all(userPromises);
+      setPosts(allPosts);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Failed to fetch all posts:", error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [db, userId]);
+
+  return (
+    <div className="w-full max-w-2xl mx-auto p-4 md:p-6 bg-gray-900 min-h-screen">
+      <header className="flex items-center justify-between p-4 mb-4">
+        <div className="w-10 h-10 bg-white rounded-full"></div>
+        <div className="flex items-center space-x-2">
+          <button className="text-gray-400 hover:text-white transition-colors duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.405L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </button>
+          <button className="text-gray-400 hover:text-white transition-colors duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* Hero section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Más recientes</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gray-800 rounded-xl p-4 flex items-center justify-center">
+            <h3 className="text-sm text-gray-400">Todos los creadores</h3>
+          </div>
+          <div className="bg-gray-800 rounded-xl p-4 flex items-center justify-center">
+            <h3 className="text-sm text-gray-400">Tus conexiones</h3>
+          </div>
+        </div>
+        <p className="mt-4 text-center text-sm text-gray-400">
+            Tu ID de usuario es: <span className="font-mono text-purple-400 break-all">{userId}</span>
+        </p>
+      </div>
+
+      {/* Post feed */}
+      <main className="space-y-6">
+        {isLoading ? (
+          <p className="text-center text-lg text-gray-400">Cargando publicaciones...</p>
+        ) : posts.length > 0 ? (
+          posts.map(post => (
+            <Post key={post.id} post={post} />
+          ))
+        ) : (
+          <p className="text-center text-lg text-gray-400">Aún no hay publicaciones. Ve a tu perfil para añadir una.</p>
+        )}
+      </main>
+
+      {/* Navigation bar */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-4 flex justify-around">
+        <button className="flex flex-col items-center text-purple-400">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2-2m-2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span className="text-xs mt-1">Inicio</span>
+        </button>
+        <button className="flex flex-col items-center text-gray-400 hover:text-white transition-colors duration-300">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <span className="text-xs mt-1">Mensajes</span>
+        </button>
+        <button className="flex flex-col items-center text-gray-400 hover:text-white transition-colors duration-300" onClick={() => navigateTo('profile')}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-xs mt-1">Crear</span>
+        </button>
+        <button className="flex flex-col items-center text-gray-400 hover:text-white transition-colors duration-300">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.405L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span className="text-xs mt-1">Notificaciones</span>
+        </button>
+        <button className="flex flex-col items-center text-gray-400 hover:text-white transition-colors duration-300" onClick={() => navigateTo('profile')}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <span className="text-xs mt-1">Perfil</span>
+        </button>
+      </footer>
+    </div>
+  );
+};
+
+// Profile Page component
+const ProfilePage = ({ navigateTo, db, user, userProfile, onLogout }) => {
+  const [posts, setPosts] = useState([]);
+  const [newPostContent, setNewPostContent] = useState('');
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Example of a hardcoded profile ID for demonstration
+  const otherUserId = 'other-user-id-to-follow'; // Replace with an actual ID from the database if needed
+
+  // Fetch user's posts
+  useEffect(() => {
+    if (!db || !user?.uid) {
+      setIsLoading(false);
+      return;
+    }
+    const postsCollectionRef = collection(db, `artifacts/${appId}/users/${user.uid}/posts`);
+    const unsubscribe = onSnapshot(postsCollectionRef, (querySnapshot) => {
+      const fetchedPosts = [];
+      querySnapshot.forEach((doc) => {
+        fetchedPosts.push({ id: doc.id, ...doc.data() });
+      });
+      setPosts(fetchedPosts);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Failed to fetch profile posts:", error);
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
+  }, [db, user]);
+
+  // Check if the current user is following the profile being viewed
+  useEffect(() => {
+    if (!db || !user?.uid) return;
+    const followingDocRef = doc(db, `artifacts/${appId}/users/${user.uid}/following`, otherUserId);
+    const unsubscribe = onSnapshot(followingDocRef, (docSnap) => {
+      setIsFollowing(docSnap.exists());
+    }, (error) => {
+      console.error("Error checking following status:", error);
+    });
+    return () => unsubscribe();
+  }, [db, user, otherUserId]);
+
+  const handleFollowToggle = async () => {
+    if (!db || !user?.uid) return;
+
+    // A document to represent the follow relationship
+    const followingDocRef = doc(db, `artifacts/${appId}/users/${user.uid}/following`, otherUserId);
+
+    try {
+      if (isFollowing) {
+        // Unfollow
+        await setDoc(followingDocRef, {}, { merge: false });
+        // Since we are not deleting, setting an empty object is a workaround.
+        // In a real app, you would use deleteDoc.
+      } else {
+        // Follow
+        await setDoc(followingDocRef, {
+          followedId: otherUserId,
+          timestamp: new Date()
+        });
+      }
+    } catch (e) {
+      console.error("Error toggling follow status: ", e);
+    }
+  };
+
+  const handlePostSubmit = async () => {
+    if (!db || !user?.uid || !newPostContent.trim()) {
+      return;
+    }
+    const postsCollectionRef = collection(db, `artifacts/${appId}/users/${user.uid}/posts`);
+    const newPostData = {
+      author: userProfile?.name || 'Usuario de prueba',
+      profilePic: userProfile?.profilePic || 'https://placehold.co/40x40/94a3b8/000?text=TU',
+      content: newPostContent.trim(),
+      image: null,
+      likes: 0,
+      comments: 0,
+      date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+    };
+    try {
+      await setDoc(doc(postsCollectionRef), newPostData);
+      setNewPostContent('');
+      console.log("Post added successfully.");
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-2xl mx-auto p-4 md:p-6 bg-gray-900 min-h-screen">
+      <header className="flex items-center justify-between p-4 mb-4">
+        <button onClick={() => navigateTo('feed')} className="text-gray-400 hover:text-white transition-colors duration-300">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 className="text-2xl font-bold">Perfil</h1>
+        <button onClick={onLogout} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl text-sm transition duration-300">
+          Salir
+        </button>
+      </header>
+
+      <div className="flex flex-col items-center mb-6">
+        <img src={userProfile?.profilePic} alt="Profile" className="w-24 h-24 rounded-full mb-4" />
+        <h2 className="text-xl font-semibold mb-1">{userProfile?.name}</h2>
+        <p className="text-sm text-gray-400 mb-4">{userProfile?.bio}</p>
+        <p className="text-xs text-gray-500 mb-2 break-all">ID: {user?.uid}</p>
+        {user?.uid !== otherUserId && ( // Hide follow button on own profile
+          <button onClick={handleFollowToggle} className={`px-6 py-2 rounded-full font-semibold transition duration-300 ${isFollowing ? 'bg-gray-600 text-white' : 'bg-purple-600 hover:bg-purple-700 text-white'}`}>
+            {isFollowing ? 'Dejar de seguir' : 'Seguir'}
+          </button>
+        )}
+      </div>
+
+      <div className="mb-8">
+        <h3 className="text-lg font-bold mb-2">Crear nueva publicación</h3>
+        <textarea
+          value={newPostContent}
+          onChange={(e) => setNewPostContent(e.target.value)}
+          placeholder="¿Qué estás desarrollando hoy?"
+          className="w-full p-4 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          rows="4"
+        ></textarea>
+        <button
+          onClick={handlePostSubmit}
+          className="w-full mt-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition duration-300"
+        >
+          Publicar
+        </button>
+      </div>
+
+      <h3 className="text-lg font-bold mb-4">Mis Publicaciones</h3>
+      <main className="space-y-6">
+        {isLoading ? (
+          <p className="text-center text-lg text-gray-400">Cargando publicaciones...</p>
+        ) : posts.length > 0 ? (
+          posts.map(post => (
+            <Post key={post.id} post={post} />
+          ))
+        ) : (
+          <p className="text-center text-gray-400">No tienes publicaciones. ¡Crea una ahora!</p>
+        )}
+      </main>
+    </div>
+  );
+};
+
+// Post component
+const Post = ({ post }) => (
+  <article className="bg-gray-800 rounded-xl shadow-md p-4 space-y-4">
+    <div className="flex items-center space-x-3">
+      <img src={post.profilePic} alt="Profile" className="w-10 h-10 rounded-full" />
+      <span className="font-semibold text-lg">{post.author}</span>
+    </div>
+    {post.image && (
+      <img src={post.image} alt="Post" className="w-full h-auto rounded-lg" />
+    )}
+    <p className="text-gray-300 leading-relaxed">{post.content}</p>
+    <div className="flex items-center space-x-4 text-sm text-gray-400">
+      <span className="flex items-center space-x-1">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+        <span>{post.likes}</span>
+      </span>
+      <span className="flex items-center space-x-1">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <span>{post.comments}</span>
+      </span>
+      <span>{post.date}</span>
+    </div>
+  </article>
+);
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
+
